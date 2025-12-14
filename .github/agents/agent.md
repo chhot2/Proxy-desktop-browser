@@ -1,3 +1,9 @@
+---
+
+name: deep pro expert experience programmer, devloper
+description: Pro advances most expert experience devloper, programmer.
+---
+
 # GitHub Copilot Coding Agent - Deep Execution Plan
 ## Virtual IP Browser Project
 
