@@ -1008,102 +1008,96 @@ impl ChromiumEngine {
     
     // ===== Enhanced CDP Commands =====
     
-    /// Execute custom JavaScript in a tab
-    pub async fn execute_script(&self, tab_id: &str, script: &str) -> Result<String> {
+    /// Helper method to get a page for a specific tab
+    /// Note: Due to chromiumoxide's architecture, we use the active tab for CDP operations.
+    /// This is a known limitation where tab_id is validated but operations target the active page.
+    async fn get_page_for_tab(&self, tab_id: &str) -> Result<Page> {
+        // Verify the tab exists
+        let tabs = self.tabs.read().await;
+        if !tabs.contains_key(tab_id) {
+            return Err(anyhow!("Tab not found: {}", tab_id));
+        }
+        drop(tabs);
+        
         let browser = self.browser.as_ref()
             .ok_or_else(|| anyhow!("Browser not launched"))?;
         
         let pages = browser.pages().await.map_err(|e| anyhow!("Failed to get pages: {}", e))?;
         
-        if let Some(page) = pages.first() {
-            let result = page.evaluate(script)
-                .await
-                .map_err(|e| anyhow!("Failed to execute script: {}", e))?;
-            
-            // Update metrics
-            {
-                let mut metrics = self.metrics.write().await;
-                metrics.cdp_commands_sent += 1;
-            }
-            
-            Ok(format!("{:?}", result))
-        } else {
-            Err(anyhow!("No pages available for tab {}", tab_id))
+        // Use the first available page (active page)
+        // TODO: Implement proper page-to-tab mapping when chromiumoxide supports target IDs
+        pages.into_iter().next()
+            .ok_or_else(|| anyhow!("No pages available"))
+    }
+    
+    /// Execute custom JavaScript in a tab
+    pub async fn execute_script(&self, tab_id: &str, script: &str) -> Result<String> {
+        let page = self.get_page_for_tab(tab_id).await?;
+        
+        let result = page.evaluate(script)
+            .await
+            .map_err(|e| anyhow!("Failed to execute script: {}", e))?;
+        
+        // Update metrics
+        {
+            let mut metrics = self.metrics.write().await;
+            metrics.cdp_commands_sent += 1;
         }
+        
+        Ok(format!("{:?}", result))
     }
     
     /// Capture screenshot of a tab
     pub async fn capture_screenshot(&self, tab_id: &str) -> Result<Vec<u8>> {
-        let browser = self.browser.as_ref()
-            .ok_or_else(|| anyhow!("Browser not launched"))?;
+        let page = self.get_page_for_tab(tab_id).await?;
         
-        let pages = browser.pages().await.map_err(|e| anyhow!("Failed to get pages: {}", e))?;
+        let screenshot = page.screenshot(chromiumoxide::page::ScreenshotParams::default())
+            .await
+            .map_err(|e| anyhow!("Failed to capture screenshot: {}", e))?;
         
-        if let Some(page) = pages.first() {
-            let screenshot = page.screenshot(chromiumoxide::page::ScreenshotParams::default())
-                .await
-                .map_err(|e| anyhow!("Failed to capture screenshot: {}", e))?;
-            
-            // Update metrics
-            {
-                let mut metrics = self.metrics.write().await;
-                metrics.cdp_commands_sent += 1;
-            }
-            
-            info!("Captured screenshot for tab {}", tab_id);
-            Ok(screenshot)
-        } else {
-            Err(anyhow!("No pages available for tab {}", tab_id))
+        // Update metrics
+        {
+            let mut metrics = self.metrics.write().await;
+            metrics.cdp_commands_sent += 1;
         }
+        
+        info!("Captured screenshot for tab {}", tab_id);
+            Ok(screenshot)
     }
     
     /// Get page HTML content
     pub async fn get_page_content(&self, tab_id: &str) -> Result<String> {
-        let browser = self.browser.as_ref()
-            .ok_or_else(|| anyhow!("Browser not launched"))?;
+        let page = self.get_page_for_tab(tab_id).await?;
         
-        let pages = browser.pages().await.map_err(|e| anyhow!("Failed to get pages: {}", e))?;
+        let content = page.content()
+            .await
+            .map_err(|e| anyhow!("Failed to get page content: {}", e))?;
         
-        if let Some(page) = pages.first() {
-            let content = page.content()
-                .await
-                .map_err(|e| anyhow!("Failed to get page content: {}", e))?;
-            
-            // Update metrics
-            {
-                let mut metrics = self.metrics.write().await;
-                metrics.cdp_commands_sent += 1;
-            }
-            
-            Ok(content)
-        } else {
-            Err(anyhow!("No pages available for tab {}", tab_id))
+        // Update metrics
+        {
+            let mut metrics = self.metrics.write().await;
+            metrics.cdp_commands_sent += 1;
         }
+        
+        Ok(content)
     }
     
     /// Reload a tab
     pub async fn reload_tab(&self, tab_id: &str) -> Result<()> {
-        let browser = self.browser.as_ref()
-            .ok_or_else(|| anyhow!("Browser not launched"))?;
+        let page = self.get_page_for_tab(tab_id).await?;
         
-        let pages = browser.pages().await.map_err(|e| anyhow!("Failed to get pages: {}", e))?;
+        page.reload()
+            .await
+            .map_err(|e| anyhow!("Failed to reload page: {}", e))?;
         
-        if let Some(page) = pages.first() {
-            page.reload()
-                .await
-                .map_err(|e| anyhow!("Failed to reload page: {}", e))?;
-            
-            // Update metrics
-            {
-                let mut metrics = self.metrics.write().await;
-                metrics.cdp_commands_sent += 1;
-            }
-            
-            info!("Reloaded tab {}", tab_id);
-            Ok(())
-        } else {
-            Err(anyhow!("No pages available for tab {}", tab_id))
+        // Update metrics
+        {
+            let mut metrics = self.metrics.write().await;
+            metrics.cdp_commands_sent += 1;
         }
+        
+        info!("Reloaded tab {}", tab_id);
+        Ok(())
     }
     
     /// Go back in tab history using JavaScript
