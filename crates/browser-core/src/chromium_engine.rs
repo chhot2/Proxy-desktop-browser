@@ -639,15 +639,36 @@ impl ChromiumEngine {
     }
 
     /// Apply network throttling to the page
+    /// 
+    /// # Current Limitation
+    /// Network throttling is not currently implemented. The configuration is validated
+    /// and logged, but throttling is not actively applied to network requests.
+    /// 
+    /// # Future Implementation
+    /// This will require direct CDP (Chrome DevTools Protocol) access via chromiumoxide
+    /// to use the Network.emulateNetworkConditions command.
+    /// 
+    /// # Workaround
+    /// For now, this method validates the configuration without error, allowing
+    /// the API to remain stable. Tests pass because they only verify the configuration,
+    /// not actual network behavior.
     async fn apply_network_throttling(&self, _page: &Page) -> Result<()> {
         let (download, upload, latency) = self.config.network_condition.get_params();
         
-        // Note: Network throttling via CDP would require direct protocol access
-        // For now, we log the configuration. Full implementation would use chromiumoxide's CDP methods
-        info!("Network throttling configured: download={}, upload={}, latency={}", download, upload, latency);
+        warn!(
+            "Network throttling is configured but not yet implemented. \
+            Configuration: download={}kbps, upload={}kbps, latency={}ms",
+            download, upload, latency
+        );
         
-        // TODO: Implement using chromiumoxide CDP commands when available:
-        // page.execute(cdp::network::EmulateNetworkConditions { ... }).await?;
+        // TODO: Implement using chromiumoxide CDP commands:
+        // page.execute(cdp::network::EmulateNetworkConditions {
+        //     offline: false,
+        //     download_throughput: download as f64 * 1024.0 / 8.0,
+        //     upload_throughput: upload as f64 * 1024.0 / 8.0,
+        //     latency: latency as f64,
+        //     connection_type: None,
+        // }).await?;
         
         Ok(())
     }
