@@ -199,3 +199,11 @@ A weighted scoring algorithm that evaluates proxies based on multiple factors:
 - **Geography** (15% weight): Preferred country matching
 - **Uptime** (15% weight): Proxy availability percentage
 - **Anonymity** (10% weight): Elite/Anonymous/Transparent classification
+## Maintainability Enhancements (v1.2.0)
+
+### Prelude Module Enhancements
+
+The prelude module has been significantly enhanced with utilities for better code maintainability:
+
+#### RetryConfig & retry_async
+Configurable retry logic with exponential backoff:

@@ -11,6 +11,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.1.0] - Enhanced Functions and Maintainability
 
+## [1.2.0] - Maintainability Enhancements
+
+### Added
+
+- **Prelude Utilities** (`crates/browser-core/src/prelude.rs`)
+  - `RetryConfig` and `retry_async`: Configurable retry logic with exponential backoff
+  - `RateLimiter`: Rate limiting for operation frequency control
+  - `CircuitBreaker`: Circuit breaker pattern for cascade failure prevention
+  - `MetricsCollector`: Lightweight metrics collection with counters, gauges, histograms
+  - `validators` module: URL, port, IP, string validation functions
+  - `string_utils` module: String manipulation helpers (truncate, sanitize, case conversion)
+
+- **Configuration Management** (`crates/browser-core/src/config_manager.rs`)
+  - `ConfigManager`: Centralized configuration management
+  - `AppConfig`: Main configuration structure
+  - `GeneralConfig`: Application settings (name, version, theme, language)
+  - `ProxyConfig`: Proxy settings (rotation, validation, providers)
+  - `PrivacyConfig`: Privacy settings (trackers, ads, cookies, fingerprint)
+  - `PerformanceConfig`: Performance settings (tabs, memory, caching)
+  - `NetworkConfig`: Network settings (timeouts, HTTP/2/3, DNS)
+  - `StorageConfig`: Storage settings (directories, backup)
+  - `LoggingConfig`: Logging settings (level, format, file)
+  - `FeatureFlags`: Feature toggles for all major features
+
+### Features
+
+- Environment variable overrides for configuration
+- JSON and TOML configuration file support
+- Configuration validation with warnings
+- Export/import configuration as JSON
+- Feature flag system for enabling/disabling features
+
+
 ### Added
 
 - **Smart Proxy Selection System** (`crates/browser-core/src/proxy_rotation.rs`)

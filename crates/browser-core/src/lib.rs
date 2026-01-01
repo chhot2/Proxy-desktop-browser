@@ -1,5 +1,64 @@
 pub mod prelude;
+
+// Re-export prelude utilities for easier access
+pub use prelude::{
+
+// Configuration management exports
+pub use config_manager::{
+    ConfigManager, AppConfig,
+    GeneralConfig, ProxyConfig, PrivacyConfig, PerformanceConfig,
+    NetworkConfig as AppNetworkConfig, StorageConfig, LoggingConfig, FeatureFlags
+};
+    OptionExt, ResultExt, unix_timestamp, unix_timestamp_ms,
+
+// Configuration management exports
+pub use config_manager::{
+    ConfigManager, AppConfig,
+    GeneralConfig, ProxyConfig, PrivacyConfig, PerformanceConfig,
+    NetworkConfig as AppNetworkConfig, StorageConfig, LoggingConfig, FeatureFlags
+};
+    RetryConfig, retry_async, RateLimiter,
+
+// Configuration management exports
+pub use config_manager::{
+    ConfigManager, AppConfig,
+    GeneralConfig, ProxyConfig, PrivacyConfig, PerformanceConfig,
+    NetworkConfig as AppNetworkConfig, StorageConfig, LoggingConfig, FeatureFlags
+};
+    CircuitBreaker, CircuitState,
+
+// Configuration management exports
+pub use config_manager::{
+    ConfigManager, AppConfig,
+    GeneralConfig, ProxyConfig, PrivacyConfig, PerformanceConfig,
+    NetworkConfig as AppNetworkConfig, StorageConfig, LoggingConfig, FeatureFlags
+};
+    MetricsCollector, HistogramStats, MetricsSnapshot,
+
+// Configuration management exports
+pub use config_manager::{
+    ConfigManager, AppConfig,
+    GeneralConfig, ProxyConfig, PrivacyConfig, PerformanceConfig,
+    NetworkConfig as AppNetworkConfig, StorageConfig, LoggingConfig, FeatureFlags
+};
+    validators, string_utils
+
+// Configuration management exports
+pub use config_manager::{
+    ConfigManager, AppConfig,
+    GeneralConfig, ProxyConfig, PrivacyConfig, PerformanceConfig,
+    NetworkConfig as AppNetworkConfig, StorageConfig, LoggingConfig, FeatureFlags
+};
+};
+
+// Configuration management exports
+pub use config_manager::{
+    ConfigManager, AppConfig,
+    GeneralConfig, ProxyConfig, PrivacyConfig, PerformanceConfig,
+    NetworkConfig as AppNetworkConfig, StorageConfig, LoggingConfig, FeatureFlags
+};
 pub mod tab_manager;
+pub mod config_manager;
 
 pub mod tab_isolation;
 pub mod fingerprint;
