@@ -1,15 +1,96 @@
 use anyhow::{anyhow, Result};
-use std::collections::HashMap;
-use std::sync::Arc;
-use tokio::sync::RwLock;
-use tokio::net::{TcpListener, TcpStream};
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use tracing::{info, error, debug};
-use uuid::Uuid;
-use std::net::SocketAddr;
 use base64::engine::Engine;
+use std::collections::HashMap;
+use std::net::SocketAddr;
+use std::sync::Arc;
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::net::{TcpListener, TcpStream};
+use tokio::sync::RwLock;
+use tracing::{debug, error, info};
+use uuid::Uuid;
 
 use crate::proxy::ProxySettings;
+
+// ============================================================================
+// Shared Utility Functions
+// ============================================================================
+
+/// Build a CONNECT request for HTTP proxy tunneling
+fn build_connect_request(host: &str, port: u16, proxy: &ProxySettings) -> String {
+    let mut request = format!(
+        "CONNECT {}:{} HTTP/1.1\r\nHost: {}:{}\r\n",
+        host, port, host, port
+    );
+
+    // Add proxy authentication if configured
+    if let (Some(username), Some(password)) = (&proxy.username, &proxy.password) {
+        let credentials = format!("{}:{}", username, password);
+        let encoded = base64::engine::general_purpose::STANDARD.encode(credentials);
+        request.push_str(&format!("Proxy-Authorization: Basic {}\r\n", encoded));
+    }
+
+    request.push_str("\r\n");
+    request
+}
+
+/// Send CONNECT request and verify the response
+async fn send_connect_request(
+    stream: &mut TcpStream,
+    host: &str,
+    port: u16,
+    proxy: &ProxySettings,
+) -> Result<()> {
+    let request = build_connect_request(host, port, proxy);
+    stream.write_all(request.as_bytes()).await?;
+
+    // Read proxy response
+    let mut response_buf = vec![0u8; 1024];
+    let n = stream.read(&mut response_buf).await?;
+    let response = String::from_utf8_lossy(&response_buf[..n]);
+
+    // Check if connection was established
+    if !response.contains("200") {
+        return Err(anyhow!("Proxy CONNECT failed: {}", response));
+    }
+
+    Ok(())
+}
+
+/// Forward data from reader to writer until EOF or error
+async fn forward_data<R, W>(mut reader: R, mut writer: W)
+where
+    R: tokio::io::AsyncRead + Unpin,
+    W: tokio::io::AsyncWrite + Unpin,
+{
+    let mut buffer = vec![0u8; 8192];
+    loop {
+        match reader.read(&mut buffer).await {
+            Ok(0) => break,
+            Ok(n) => {
+                if writer.write_all(&buffer[..n]).await.is_err() {
+                    break;
+                }
+            }
+            Err(_) => break,
+        }
+    }
+}
+
+/// Bidirectional data forwarding between two streams
+async fn forward_bidirectional(client_stream: TcpStream, target_stream: TcpStream) {
+    let (client_read, client_write) = client_stream.into_split();
+    let (target_read, target_write) = target_stream.into_split();
+
+    // Run both directions concurrently until one completes
+    tokio::select! {
+        _ = forward_data(client_read, target_write) => {}
+        _ = forward_data(target_read, client_write) => {}
+    }
+}
+
+// ============================================================================
+// Local Proxy Server
+// ============================================================================
 
 /// Local proxy server for routing tab traffic through upstream proxies
 pub struct LocalProxyServer {
@@ -56,7 +137,8 @@ impl LocalProxyServer {
             return Err(anyhow!("Proxy server is already running"));
         }
 
-        let listener = TcpListener::bind(&self.bind_addr).await
+        let listener = TcpListener::bind(&self.bind_addr)
+            .await
             .map_err(|e| anyhow!("Failed to bind to {}: {}", self.bind_addr, e))?;
 
         info!("Local proxy server listening on {}", self.bind_addr);
@@ -83,7 +165,9 @@ impl LocalProxyServer {
                                 conn_id.clone(),
                                 upstream_proxy_clone,
                                 connections_clone,
-                            ).await {
+                            )
+                            .await
+                            {
                                 error!("Error handling connection {}: {}", conn_id, e);
                             }
                         });
@@ -104,11 +188,11 @@ impl LocalProxyServer {
     pub async fn stop(&self) -> Result<()> {
         let mut is_running = self.is_running.write().await;
         *is_running = false;
-        
+
         // Clear all connections
         let mut connections = self.connections.write().await;
         connections.clear();
-        
+
         info!("Local proxy server stopped");
         Ok(())
     }
@@ -137,14 +221,17 @@ impl LocalProxyServer {
         // Record the connection
         {
             let mut conns = connections.write().await;
-            conns.insert(conn_id.clone(), ProxyConnection {
-                id: conn_id.clone(),
-                client_addr: client_addr.clone(),
-                target_host: target_host.clone(),
-                target_port,
-                upstream_proxy: upstream_proxy.clone(),
-                created_at: chrono::Utc::now(),
-            });
+            conns.insert(
+                conn_id.clone(),
+                ProxyConnection {
+                    id: conn_id.clone(),
+                    client_addr: client_addr.clone(),
+                    target_host: target_host.clone(),
+                    target_port,
+                    upstream_proxy: upstream_proxy.clone(),
+                    created_at: chrono::Utc::now(),
+                },
+            );
         }
 
         // Send 200 Connection established response
@@ -158,44 +245,8 @@ impl LocalProxyServer {
             Self::connect_direct(&target_host, target_port).await?
         };
 
-        // Start proxying data between client and target
-        let (mut client_read, mut client_write) = client_stream.into_split();
-        let (mut target_read, mut target_write) = target_stream.into_split();
-
-        // Proxy client to target
-        let client_to_target = tokio::spawn(async move {
-            let mut buffer = vec![0u8; 8192];
-            loop {
-                match client_read.read(&mut buffer).await {
-                    Ok(0) => break,
-                    Ok(n) => {
-                        if target_write.write_all(&buffer[..n]).await.is_err() {
-                            break;
-                        }
-                    }
-                    Err(_) => break,
-                }
-            }
-        });
-
-        // Proxy target to client
-        let target_to_client = tokio::spawn(async move {
-            let mut buffer = vec![0u8; 8192];
-            loop {
-                match target_read.read(&mut buffer).await {
-                    Ok(0) => break,
-                    Ok(n) => {
-                        if client_write.write_all(&buffer[..n]).await.is_err() {
-                            break;
-                        }
-                    }
-                    Err(_) => break,
-                }
-            }
-        });
-
-        // Wait for either direction to finish
-        futures::future::select(client_to_target, target_to_client).await;
+        // Forward data bidirectionally
+        forward_bidirectional(client_stream, target_stream).await;
 
         // Remove connection from active list
         {
@@ -226,7 +277,8 @@ impl LocalProxyServer {
         }
 
         let host = target_parts[0].to_string();
-        let port = target_parts[1].parse::<u16>()
+        let port = target_parts[1]
+            .parse::<u16>()
             .map_err(|_| anyhow!("Invalid port"))?;
 
         Ok((host, port))
@@ -235,7 +287,8 @@ impl LocalProxyServer {
     /// Connect directly to target host
     async fn connect_direct(host: &str, port: u16) -> Result<TcpStream> {
         let target_addr = format!("{}:{}", host, port);
-        TcpStream::connect(target_addr).await
+        TcpStream::connect(target_addr)
+            .await
             .map_err(|e| anyhow!("Failed to connect to {}:{} - {}", host, port, e))
     }
 
@@ -245,40 +298,21 @@ impl LocalProxyServer {
         target_host: &str,
         target_port: u16,
     ) -> Result<TcpStream> {
-        let proxy_addr = format!("{}:{}", 
-            proxy.host.as_ref().ok_or_else(|| anyhow!("Proxy host not set"))?,
+        let proxy_addr = format!(
+            "{}:{}",
+            proxy
+                .host
+                .as_ref()
+                .ok_or_else(|| anyhow!("Proxy host not set"))?,
             proxy.port.ok_or_else(|| anyhow!("Proxy port not set"))?
         );
 
-        let mut proxy_stream = TcpStream::connect(&proxy_addr).await
+        let mut proxy_stream = TcpStream::connect(&proxy_addr)
+            .await
             .map_err(|e| anyhow!("Failed to connect to proxy {} - {}", proxy_addr, e))?;
 
-        // Send CONNECT request to upstream proxy
-        let connect_req = format!(
-            "CONNECT {}:{} HTTP/1.1\r\nHost: {}:{}\r\n",
-            target_host, target_port, target_host, target_port
-        );
-
-        // Add proxy authentication if configured
-        let auth_header = if let (Some(username), Some(password)) = (&proxy.username, &proxy.password) {
-            let auth = base64::engine::general_purpose::STANDARD.encode(format!("{}:{}", username, password).as_bytes());
-            format!("Proxy-Authorization: Basic {}\r\n", auth)
-        } else {
-            String::new()
-        };
-
-        let full_request = format!("{}{}\r\n", connect_req, auth_header);
-        proxy_stream.write_all(full_request.as_bytes()).await?;
-
-        // Read proxy response
-        let mut response_buf = vec![0u8; 1024];
-        let n = proxy_stream.read(&mut response_buf).await?;
-        let response = String::from_utf8_lossy(&response_buf[..n]);
-
-        // Check if connection was established
-        if !response.starts_with("HTTP/1.1 200") {
-            return Err(anyhow!("Proxy failed to establish connection: {}", response));
-        }
+        // Send CONNECT request and verify response
+        send_connect_request(&mut proxy_stream, target_host, target_port, proxy).await?;
 
         Ok(proxy_stream)
     }
@@ -293,6 +327,10 @@ impl LocalProxyServer {
         *self.is_running.read().await
     }
 }
+
+// ============================================================================
+// Local Proxy Manager
+// ============================================================================
 
 /// Manager for multiple local proxy servers (one per tab)
 pub struct LocalProxyManager {
@@ -353,7 +391,7 @@ impl LocalProxyManager {
 
         if let Some(server) = proxy_server {
             server.stop().await?;
-            
+
             // Extract port from bind address and mark as available
             let addr_str = server.get_proxy_url();
             if let Some(port_str) = addr_str.split(':').nth(1) {
@@ -378,7 +416,7 @@ impl LocalProxyManager {
     /// Find an available port in the configured range
     async fn find_available_port(&self) -> Result<u16> {
         let used_ports = self.used_ports.read().await;
-        
+
         for port in self.port_range.clone() {
             if !used_ports.contains(&port) {
                 return Ok(port);
@@ -391,7 +429,8 @@ impl LocalProxyManager {
     /// Get all active proxy servers
     pub async fn get_active_proxies(&self) -> HashMap<String, String> {
         let servers = self.proxy_servers.read().await;
-        servers.iter()
+        servers
+            .iter()
             .map(|(tab_id, server)| (tab_id.clone(), server.get_proxy_url()))
             .collect()
     }
@@ -426,9 +465,9 @@ impl LocalProxyManager {
 // WebSocket Proxy Support
 // ============================================================================
 
-use tokio_tungstenite::{WebSocketStream, MaybeTlsStream};
+use futures_util::{SinkExt, StreamExt};
 use tokio_tungstenite::tungstenite::Message as WsMessage;
-use futures_util::{StreamExt, SinkExt};
+use tokio_tungstenite::{MaybeTlsStream, WebSocketStream};
 
 /// WebSocket proxy handler for proxying WebSocket connections
 pub struct WebSocketProxyHandler {
@@ -441,16 +480,12 @@ impl WebSocketProxyHandler {
     }
 
     /// Handle a WebSocket upgrade request and proxy the connection
-    pub async fn handle_upgrade(
-        &self,
-        client_stream: TcpStream,
-        target_url: &str,
-    ) -> Result<()> {
+    pub async fn handle_upgrade(&self, client_stream: TcpStream, target_url: &str) -> Result<()> {
         info!("Handling WebSocket upgrade for: {}", target_url);
 
         // Parse the target URL
-        let url = url::Url::parse(target_url)
-            .map_err(|e| anyhow!("Invalid WebSocket URL: {}", e))?;
+        let url =
+            url::Url::parse(target_url).map_err(|e| anyhow!("Invalid WebSocket URL: {}", e))?;
 
         // Connect to the target WebSocket server
         let (ws_stream, _response) = if let Some(ref proxy) = self.upstream_proxy {
@@ -472,10 +507,60 @@ impl WebSocketProxyHandler {
     async fn connect_direct(
         &self,
         url: &url::Url,
-    ) -> Result<(WebSocketStream<MaybeTlsStream<TcpStream>>, tokio_tungstenite::tungstenite::http::Response<Option<Vec<u8>>>)> {
+    ) -> Result<(
+        WebSocketStream<MaybeTlsStream<TcpStream>>,
+        tokio_tungstenite::tungstenite::http::Response<Option<Vec<u8>>>,
+    )> {
         tokio_tungstenite::connect_async(url.as_str())
             .await
             .map_err(|e| anyhow!("Failed to connect to WebSocket server: {}", e))
+    }
+
+    /// Establish a CONNECT tunnel through the proxy
+    async fn establish_proxy_tunnel(
+        &self,
+        url: &url::Url,
+        proxy: &ProxySettings,
+    ) -> Result<TcpStream> {
+        let proxy_host = proxy
+            .host
+            .as_ref()
+            .ok_or_else(|| anyhow!("Proxy host not configured"))?;
+        let proxy_port = proxy
+            .port
+            .ok_or_else(|| anyhow!("Proxy port not configured"))?;
+
+        let proxy_addr = format!("{}:{}", proxy_host, proxy_port);
+        let mut proxy_stream = TcpStream::connect(&proxy_addr)
+            .await
+            .map_err(|e| anyhow!("Failed to connect to proxy: {}", e))?;
+
+        let target_host = url
+            .host_str()
+            .ok_or_else(|| anyhow!("No host in WebSocket URL"))?;
+        let target_port = url
+            .port()
+            .unwrap_or(if url.scheme() == "wss" { 443 } else { 80 });
+
+        // Send CONNECT request and verify response
+        send_connect_request(&mut proxy_stream, target_host, target_port, proxy).await?;
+
+        Ok(proxy_stream)
+    }
+
+    /// Perform TLS handshake on a stream
+    async fn perform_tls_handshake(
+        &self,
+        stream: TcpStream,
+        host: &str,
+    ) -> Result<tokio_native_tls::TlsStream<TcpStream>> {
+        let connector = tokio_native_tls::TlsConnector::from(
+            native_tls::TlsConnector::new().map_err(|e| anyhow!("TLS error: {}", e))?,
+        );
+        connector
+            .connect(host, stream)
+            .await
+            .map_err(|e| anyhow!("TLS handshake failed: {}", e))
     }
 
     /// Connect through a proxy to a WebSocket server
@@ -483,47 +568,21 @@ impl WebSocketProxyHandler {
         &self,
         url: &url::Url,
         proxy: &ProxySettings,
-    ) -> Result<(WebSocketStream<MaybeTlsStream<TcpStream>>, tokio_tungstenite::tungstenite::http::Response<Option<Vec<u8>>>)> {
-        let proxy_host = proxy.host.as_ref()
-            .ok_or_else(|| anyhow!("Proxy host not configured"))?;
-        let proxy_port = proxy.port
-            .ok_or_else(|| anyhow!("Proxy port not configured"))?;
+    ) -> Result<(
+        WebSocketStream<MaybeTlsStream<TcpStream>>,
+        tokio_tungstenite::tungstenite::http::Response<Option<Vec<u8>>>,
+    )> {
+        let proxy_stream = self.establish_proxy_tunnel(url, proxy).await?;
 
-        // First establish a CONNECT tunnel through the proxy
-        let proxy_addr = format!("{}:{}", proxy_host, proxy_port);
-        let proxy_stream = TcpStream::connect(&proxy_addr)
-            .await
-            .map_err(|e| anyhow!("Failed to connect to proxy: {}", e))?;
-
-        let target_host = url.host_str()
+        let target_host = url
+            .host_str()
             .ok_or_else(|| anyhow!("No host in WebSocket URL"))?;
-        let target_port = url.port().unwrap_or(if url.scheme() == "wss" { 443 } else { 80 });
 
-        // Send CONNECT request
-        let connect_request = self.build_connect_request(target_host, target_port, proxy);
-        let mut proxy_stream = proxy_stream;
-        proxy_stream.write_all(connect_request.as_bytes()).await?;
-
-        // Read CONNECT response
-        let mut response_buffer = vec![0u8; 1024];
-        let n = proxy_stream.read(&mut response_buffer).await?;
-        let response = String::from_utf8_lossy(&response_buffer[..n]);
-
-        if !response.contains("200") {
-            return Err(anyhow!("Proxy CONNECT failed: {}", response));
-        }
-
-        // Now upgrade the tunneled connection to WebSocket
+        // Upgrade to WebSocket (with TLS if needed)
         let ws_stream = if url.scheme() == "wss" {
-            // TLS handshake needed
-            let connector = tokio_native_tls::TlsConnector::from(
-                native_tls::TlsConnector::new()
-                    .map_err(|e| anyhow!("TLS error: {}", e))?
-            );
-            let tls_stream = connector.connect(target_host, proxy_stream)
-                .await
-                .map_err(|e| anyhow!("TLS handshake failed: {}", e))?;
-            
+            let tls_stream = self
+                .perform_tls_handshake(proxy_stream, target_host)
+                .await?;
             tokio_tungstenite::client_async(url.as_str(), MaybeTlsStream::NativeTls(tls_stream))
                 .await
                 .map_err(|e| anyhow!("WebSocket handshake failed: {}", e))?
@@ -536,34 +595,20 @@ impl WebSocketProxyHandler {
         Ok(ws_stream)
     }
 
-    /// Build a CONNECT request for the proxy
-    fn build_connect_request(&self, host: &str, port: u16, proxy: &ProxySettings) -> String {
-        let mut request = format!(
-            "CONNECT {}:{} HTTP/1.1\r\nHost: {}:{}\r\n",
-            host, port, host, port
-        );
-
-        // Add proxy authentication if configured
-        if let (Some(username), Some(password)) = (&proxy.username, &proxy.password) {
-            let credentials = format!("{}:{}", username, password);
-            let encoded = base64::engine::general_purpose::STANDARD.encode(credentials);
-            request.push_str(&format!("Proxy-Authorization: Basic {}\r\n", encoded));
-        }
-
-        request.push_str("\r\n");
-        request
-    }
-
     /// Forward WebSocket messages from reader to writer until close or error
-    async fn forward_websocket_messages<R, W>(
-        mut reader: R,
-        mut writer: W,
-    ) where
-        R: futures_util::Stream<Item = Result<tokio_tungstenite::tungstenite::Message, tokio_tungstenite::tungstenite::Error>> + Unpin,
-        W: futures_util::Sink<tokio_tungstenite::tungstenite::Message, Error = tokio_tungstenite::tungstenite::Error> + Unpin,
+    async fn forward_websocket_messages<R, W>(mut reader: R, mut writer: W)
+    where
+        R: futures_util::Stream<
+                Item = Result<
+                    tokio_tungstenite::tungstenite::Message,
+                    tokio_tungstenite::tungstenite::Error,
+                >,
+            > + Unpin,
+        W: futures_util::Sink<
+                tokio_tungstenite::tungstenite::Message,
+                Error = tokio_tungstenite::tungstenite::Error,
+            > + Unpin,
     {
-        use futures_util::{StreamExt, SinkExt};
-        
         while let Some(msg_result) = reader.next().await {
             match msg_result {
                 Ok(msg) if msg.is_close() => break,
@@ -603,6 +648,10 @@ impl WebSocketProxyHandler {
         Ok(())
     }
 }
+
+// ============================================================================
+// Network Interceptor
+// ============================================================================
 
 /// WebSocket interception result
 #[derive(Debug, Clone)]
@@ -673,7 +722,7 @@ impl NetworkInterceptor {
     pub async fn log_request(&self, request: InterceptedRequest) {
         let mut requests = self.intercepted_requests.write().await;
         requests.push(request);
-        
+
         // Keep only the last 1000 requests
         if requests.len() > 1000 {
             requests.remove(0);
@@ -714,34 +763,28 @@ impl NetworkInterceptor {
     /// Check if a URL should be blocked
     pub async fn should_block(&self, url: &str) -> bool {
         let patterns = self.blocked_patterns.read().await;
-        for pattern in patterns.iter() {
-            if url.contains(pattern) {
-                return true;
-            }
-        }
-        false
+        patterns.iter().any(|pattern| url.contains(pattern))
     }
 
-    /// Apply modification rules to a request
     /// Apply a single modification rule to a request
     fn apply_rule_to_request(request: &mut InterceptedRequest, rule: &ModificationRule) {
         // Add headers
         for (key, value) in &rule.modifications.add_headers {
             request.headers.insert(key.clone(), value.clone());
         }
-        
+
         // Remove headers
         for key in &rule.modifications.remove_headers {
             request.headers.remove(key);
         }
-        
+
         // Modify existing headers
         for (key, value) in &rule.modifications.modify_headers {
             if request.headers.contains_key(key) {
                 request.headers.insert(key.clone(), value.clone());
             }
         }
-        
+
         request.modified = true;
     }
 
@@ -750,27 +793,31 @@ impl NetworkInterceptor {
         rule.enabled && request.url.contains(&rule.url_pattern)
     }
 
+    /// Apply modification rules to a request
     pub async fn apply_modifications(&self, mut request: InterceptedRequest) -> InterceptedRequest {
         let rules = self.modification_rules.read().await;
-        
+
         for rule in rules.iter() {
             if Self::rule_matches_request(&request, rule) {
                 Self::apply_rule_to_request(&mut request, rule);
             }
         }
-        
+
         request
     }
 
     /// Register a WebSocket connection
     pub async fn register_websocket(&self, id: String, url: String) {
         let mut connections = self.websocket_connections.write().await;
-        connections.insert(id, WebSocketInterception {
-            url,
-            message_count: 0,
-            started_at: chrono::Utc::now(),
-            ended_at: None,
-        });
+        connections.insert(
+            id,
+            WebSocketInterception {
+                url,
+                message_count: 0,
+                started_at: chrono::Utc::now(),
+                ended_at: None,
+            },
+        );
     }
 
     /// Update WebSocket message count
