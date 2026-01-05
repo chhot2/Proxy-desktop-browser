@@ -106,11 +106,11 @@ fn test_fingerprint_clone() {
 fn test_fingerprint_serialization() {
     let fingerprint = create_test_fingerprint();
     
-    let json = serde_json::to_string(&fingerprint).unwrap();
+    let json = serde_json::to_string(&fingerprint).expect("Fingerprint operation failed");
     assert!(json.contains("user_agent"));
     assert!(json.contains("screen_resolution"));
     
-    let parsed: BrowserFingerprint = serde_json::from_str(&json).unwrap();
+    let parsed: BrowserFingerprint = serde_json::from_str(&json).expect("Json operation failed");
     assert_eq!(parsed.user_agent, fingerprint.user_agent);
 }
 
@@ -185,11 +185,11 @@ fn test_tab_status_serialization() {
     ];
     
     for status in statuses {
-        let json = serde_json::to_string(&status).unwrap();
-        let parsed: TabStatus = serde_json::from_str(&json).unwrap();
+        let json = serde_json::to_string(&status).expect("Status operation failed");
+        let parsed: TabStatus = serde_json::from_str(&json).expect("Json operation failed");
         
         // Verify round-trip serialization
-        let json2 = serde_json::to_string(&parsed).unwrap();
+        let json2 = serde_json::to_string(&parsed).expect("Failed to parse");
         assert_eq!(json, json2);
     }
 }
@@ -212,11 +212,11 @@ fn test_tls_profile_creation() {
 fn test_tls_profile_serialization() {
     let profile = create_test_tls_profile();
     
-    let json = serde_json::to_string(&profile).unwrap();
+    let json = serde_json::to_string(&profile).expect("File operation failed");
     assert!(json.contains("version"));
     assert!(json.contains("cipher_suites"));
     
-    let parsed: TLSProfile = serde_json::from_str(&json).unwrap();
+    let parsed: TLSProfile = serde_json::from_str(&json).expect("Json operation failed");
     assert_eq!(parsed.version, profile.version);
 }
 
@@ -236,8 +236,8 @@ fn test_http2_settings_creation() {
 fn test_http2_settings_serialization() {
     let settings = create_test_http2_settings();
     
-    let json = serde_json::to_string(&settings).unwrap();
-    let parsed: HTTP2Settings = serde_json::from_str(&json).unwrap();
+    let json = serde_json::to_string(&settings).expect("Settings operation failed");
+    let parsed: HTTP2Settings = serde_json::from_str(&json).expect("Json operation failed");
     assert_eq!(parsed.window_update, settings.window_update);
 }
 
@@ -258,8 +258,8 @@ fn test_tcp_fingerprint_creation() {
 fn test_tcp_fingerprint_serialization() {
     let fingerprint = create_test_tcp_fingerprint();
     
-    let json = serde_json::to_string(&fingerprint).unwrap();
-    let parsed: TCPFingerprint = serde_json::from_str(&json).unwrap();
+    let json = serde_json::to_string(&fingerprint).expect("Fingerprint operation failed");
+    let parsed: TCPFingerprint = serde_json::from_str(&json).expect("Json operation failed");
     assert_eq!(parsed.ttl, fingerprint.ttl);
 }
 
@@ -294,12 +294,12 @@ fn test_network_config_no_proxy() {
 fn test_network_config_serialization() {
     let config = create_test_network_config();
     
-    let json = serde_json::to_string(&config).unwrap();
+    let json = serde_json::to_string(&config).expect("Configuration error");
     assert!(json.contains("proxy_url"));
     assert!(json.contains("dns_servers"));
     assert!(json.contains("tls_profile"));
     
-    let parsed: NetworkConfig = serde_json::from_str(&json).unwrap();
+    let parsed: NetworkConfig = serde_json::from_str(&json).expect("Json operation failed");
     assert_eq!(parsed.dns_servers.len(), config.dns_servers.len());
 }
 

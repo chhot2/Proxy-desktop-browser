@@ -311,7 +311,7 @@ async fn test_register_websocket() {
     let connections = interceptor.get_websocket_connections().await;
     assert_eq!(connections.len(), 1);
     
-    let conn = connections.get("ws-1").unwrap();
+    let conn = connections.get("ws-1").expect("Failed to get value");
     assert_eq!(conn.url, "wss://example.com/socket");
     assert_eq!(conn.message_count, 0);
     assert!(conn.ended_at.is_none());
@@ -331,7 +331,7 @@ async fn test_increment_websocket_count() {
     }
     
     let connections = interceptor.get_websocket_connections().await;
-    let conn = connections.get("ws-1").unwrap();
+    let conn = connections.get("ws-1").expect("Failed to get value");
     assert_eq!(conn.message_count, 5);
 }
 
@@ -347,7 +347,7 @@ async fn test_close_websocket() {
     interceptor.close_websocket("ws-1").await;
     
     let connections = interceptor.get_websocket_connections().await;
-    let conn = connections.get("ws-1").unwrap();
+    let conn = connections.get("ws-1").expect("Failed to get value");
     assert!(conn.ended_at.is_some());
 }
 
@@ -413,8 +413,8 @@ fn test_intercepted_request_serialization() {
         modified: true,
     };
     
-    let json = serde_json::to_string(&request).unwrap();
-    let parsed: InterceptedRequest = serde_json::from_str(&json).unwrap();
+    let json = serde_json::to_string(&request).expect("Request operation failed");
+    let parsed: InterceptedRequest = serde_json::from_str(&json).expect("Json operation failed");
     
     assert_eq!(parsed.id, request.id);
     assert_eq!(parsed.method, request.method);
@@ -444,8 +444,8 @@ fn test_modification_rule_serialization() {
         },
     };
     
-    let json = serde_json::to_string(&rule).unwrap();
-    let parsed: ModificationRule = serde_json::from_str(&json).unwrap();
+    let json = serde_json::to_string(&rule).expect("Rule operation failed");
+    let parsed: ModificationRule = serde_json::from_str(&json).expect("Json operation failed");
     
     assert_eq!(parsed.id, rule.id);
     assert_eq!(parsed.url_pattern, rule.url_pattern);

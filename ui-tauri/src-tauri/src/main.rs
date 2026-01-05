@@ -418,6 +418,7 @@ async fn delete_bookmark(state: State<'_, AppState>, id: i64) -> Result<(), Stri
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a TabResponse.
 pub struct TabResponse {
     pub tab_id: String,
     pub ip: String,
@@ -443,6 +444,7 @@ impl From<browser_core::TabProfile> for TabResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a VirtualIPResponse.
 pub struct VirtualIPResponse {
     pub ip: String,
     pub country_code: String,
@@ -472,6 +474,7 @@ impl From<VirtualIP> for VirtualIPResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a CountryResponse.
 pub struct CountryResponse {
     pub code: String,
     pub name: String,
@@ -497,6 +500,7 @@ impl From<Country> for CountryResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a ValidationResponse.
 pub struct ValidationResponse {
     pub ip: String,
     pub ip_matches: bool,
@@ -507,6 +511,7 @@ pub struct ValidationResponse {
 
 // Proxy types
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a ProxySettingsResponse.
 pub struct ProxySettingsResponse {
     pub proxy_type: String,
     pub host: Option<String>,
@@ -538,6 +543,7 @@ impl From<ProxySettings> for ProxySettingsResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a ProxySettingsRequest.
 pub struct ProxySettingsRequest {
     pub proxy_type: String,
     pub host: Option<String>,
@@ -569,6 +575,7 @@ impl From<ProxySettingsRequest> for ProxySettings {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a FreeProxyResponse.
 pub struct FreeProxyResponse {
     pub ip: String,
     pub port: u16,
@@ -608,6 +615,7 @@ impl From<FreeProxy> for FreeProxyResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a FreeProxyRequest.
 pub struct FreeProxyRequest {
     pub ip: String,
     pub port: u16,
@@ -647,6 +655,7 @@ impl From<FreeProxyRequest> for FreeProxy {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a ProxyTestResultResponse.
 pub struct ProxyTestResultResponse {
     pub proxy: FreeProxyResponse,
     pub is_working: bool,
@@ -668,6 +677,7 @@ impl From<browser_core::ProxyTestResult> for ProxyTestResultResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a PublicIpResponse.
 pub struct PublicIpResponse {
     pub ip: String,
     pub country: Option<String>,
@@ -693,6 +703,7 @@ impl From<PublicIpInfo> for PublicIpResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a BackupOptionsRequest.
 pub struct BackupOptionsRequest {
     pub include_proxy_settings: bool,
     pub include_browser_config: bool,
@@ -704,6 +715,7 @@ pub struct BackupOptionsRequest {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a BackupInfoResponse.
 pub struct BackupInfoResponse {
     pub id: String,
     pub filename: String,
@@ -728,6 +740,7 @@ impl From<BackupInfo> for BackupInfoResponse {
 
 // Browser state types
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a BrowserStateResponse.
 pub struct BrowserStateResponse {
     pub tab_id: String,
     pub current_url: String,
@@ -751,6 +764,7 @@ impl From<BrowserState> for BrowserStateResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a BrowserSettingsResponse.
 pub struct BrowserSettingsResponse {
     pub user_agent: String,
     pub language: String,
@@ -793,6 +807,7 @@ impl From<BrowserSettings> for BrowserSettingsResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a BrowserSettingsRequest.
 pub struct BrowserSettingsRequest {
     pub user_agent: String,
     pub language: String,
@@ -835,6 +850,7 @@ impl From<BrowserSettingsRequest> for BrowserSettings {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a HistoryEntryResponse.
 pub struct HistoryEntryResponse {
     pub id: i64,
     pub url: String,
@@ -856,6 +872,7 @@ impl From<browser_core::HistoryEntry> for HistoryEntryResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a BookmarkResponse.
 pub struct BookmarkResponse {
     pub id: i64,
     pub url: String,

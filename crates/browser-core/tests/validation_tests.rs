@@ -179,7 +179,7 @@ fn test_validation_result_failed() {
     
     assert!(!result.is_working);
     assert!(result.error.is_some());
-    assert_eq!(result.error.as_ref().unwrap(), "Connection timeout");
+    assert_eq!(result.error.as_ref().expect("As Ref operation failed"), "Connection timeout");
 }
 
 #[test]
@@ -275,7 +275,7 @@ async fn test_quarantine_manager_multiple_failures() {
     // Verify the proxy in quarantine has 3 failures
     let q_proxy = quarantined.iter().find(|q| q.proxy.ip == proxy.ip);
     assert!(q_proxy.is_some());
-    assert_eq!(q_proxy.unwrap().consecutive_failures, 3);
+    assert_eq!(q_proxy.expect("Q Proxy operation failed").consecutive_failures, 3);
 }
 
 #[tokio::test]
@@ -359,7 +359,7 @@ fn test_geo_verification_result_verified() {
     };
     
     assert!(result.is_verified);
-    assert_eq!(result.expected_country, result.detected_country.unwrap());
+    assert_eq!(result.expected_country, result.detected_country.expect("Detected Country operation failed"));
 }
 
 #[test]
@@ -375,7 +375,7 @@ fn test_geo_verification_result_mismatch() {
     };
     
     assert!(!result.is_verified);
-    assert_ne!(result.expected_country, result.detected_country.unwrap());
+    assert_ne!(result.expected_country, result.detected_country.expect("Detected Country operation failed"));
 }
 
 // ============================================================================
@@ -555,7 +555,7 @@ mod integration_tests {
             geoip_api_urls: vec![],
         };
         
-        let verifier = GeoVerifier::new(config).unwrap();
+        let verifier = GeoVerifier::new(config).expect("Configuration error");
         let proxy = create_test_proxy();
         
         let result = verifier.verify_proxy_location(&proxy, "203.0.113.1").await;

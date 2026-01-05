@@ -15,6 +15,7 @@ pub struct IPRotationManager {
 }
 
 #[derive(Clone)]
+/// Represents a IPSession.
 pub struct IPSession {
     pub virtual_ip: VirtualIP,
     pub assigned_at: DateTime<Utc>,
@@ -24,6 +25,7 @@ pub struct IPSession {
 }
 
 #[derive(Debug, Clone)]
+/// Enumeration of RotationStrategy variants.
 pub enum RotationStrategy {
     /// Rotate IP after N requests
     PerRequest(usize),
@@ -40,6 +42,7 @@ pub enum RotationStrategy {
 }
 
 impl IPRotationManager {
+    /// Creates a new new.
     pub fn new(generator: Arc<IPGenerator>, strategy: RotationStrategy) -> Self {
         Self {
             generator,
@@ -149,6 +152,7 @@ impl IPRotationManager {
 }
 
 #[derive(Debug, Clone)]
+/// Represents a SessionStats.
 pub struct SessionStats {
     pub session_id: String,
     pub current_ip: String,

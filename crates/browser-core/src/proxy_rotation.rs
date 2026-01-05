@@ -19,6 +19,7 @@ pub struct ProxyRotationManager {
 }
 
 #[derive(Clone)]
+/// Represents a ProxySession.
 pub struct ProxySession {
     pub proxy: FreeProxy,
     pub assigned_at: DateTime<Utc>,
@@ -29,6 +30,7 @@ pub struct ProxySession {
 }
 
 #[derive(Debug, Clone)]
+/// Enumeration of ProxyRotationStrategy variants.
 pub enum ProxyRotationStrategy {
     /// Rotate proxy after N requests
     PerRequest(usize),
@@ -53,6 +55,7 @@ pub enum ProxyRotationStrategy {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a ProxyMetrics.
 pub struct ProxyMetrics {
     pub response_time_ms: f64,
     pub success_rate: f64,
@@ -63,6 +66,7 @@ pub struct ProxyMetrics {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a ProxySessionStats.
 pub struct ProxySessionStats {
     pub tab_id: String,
     pub current_proxy_ip: String,
@@ -73,6 +77,7 @@ pub struct ProxySessionStats {
 }
 
 impl ProxyRotationManager {
+    /// Creates a new new.
     pub fn new(
         provider_manager: Arc<RwLock<FreeIpProviderManager>>,
         strategy: ProxyRotationStrategy,
@@ -340,6 +345,7 @@ impl ProxyRotationManager {
 
 /// Smart proxy selector with weighted scoring algorithm
 #[derive(Debug, Clone)]
+/// Represents a SmartProxySelector.
 pub struct SmartProxySelector {
     /// Weight for success rate (0.0 - 1.0)
     pub success_rate_weight: f64,
@@ -507,6 +513,7 @@ pub struct ProxyHealthMonitor {
 
 /// Health status for a proxy
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a ProxyHealthStatus.
 pub struct ProxyHealthStatus {
     pub proxy_id: String,
     pub is_healthy: bool,
@@ -519,6 +526,7 @@ pub struct ProxyHealthStatus {
 
 /// Bandwidth statistics for a proxy
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+/// Represents a BandwidthStats.
 pub struct BandwidthStats {
     pub proxy_id: String,
     pub bytes_sent: u64,
@@ -547,6 +555,7 @@ impl BandwidthStats {
 }
 
 impl ProxyHealthMonitor {
+    /// Creates a new new.
     pub fn new() -> Self {
         Self {
             check_interval_secs: 60,
@@ -694,6 +703,7 @@ impl Default for ProxyHealthMonitor {
 
 /// Geographic diversity manager for proxy distribution
 #[derive(Debug, Clone)]
+/// Represents a GeoDiversityManager.
 pub struct GeoDiversityManager {
     /// Country usage counts
     country_usage: HashMap<String, u32>,
@@ -704,6 +714,7 @@ pub struct GeoDiversityManager {
 }
 
 impl GeoDiversityManager {
+    /// Creates a new new.
     pub fn new(max_per_country: u32) -> Self {
         Self {
             country_usage: HashMap::new(),

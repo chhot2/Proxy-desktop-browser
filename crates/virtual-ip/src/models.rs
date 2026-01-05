@@ -3,6 +3,7 @@ use std::net::Ipv4Addr;
 use std::path::Path;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a Country.
 pub struct Country {
     pub code: String,
     pub name: String,
@@ -14,6 +15,7 @@ pub struct Country {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a VirtualIP.
 pub struct VirtualIP {
     pub ip: Ipv4Addr,
     pub country_code: String,
@@ -28,6 +30,7 @@ pub struct VirtualIP {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a IPRange.
 pub struct IPRange {
     pub start: Ipv4Addr,
     pub end: Ipv4Addr,
@@ -36,11 +39,13 @@ pub struct IPRange {
 }
 
 impl IPRange {
+    /// Performs contains operation.
     pub fn contains(&self, ip: &Ipv4Addr) -> bool {
         u32::from(*ip) >= u32::from(self.start) && u32::from(*ip) <= u32::from(self.end)
     }
 }
 
+/// Represents a CountryDatabase.
 pub struct CountryDatabase;
 
 impl CountryDatabase {
@@ -68,6 +73,7 @@ impl CountryDatabase {
         ]
     }
 
+    /// Loads the top countries.
     pub fn load_top_countries() -> Vec<Country> {
         Self::load_all_countries()
             .into_iter()

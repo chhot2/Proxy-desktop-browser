@@ -72,7 +72,7 @@ async fn test_set_proxy() {
     let config = manager.get_config().await;
     assert!(config.proxy.is_some());
     
-    let stored_proxy = config.proxy.unwrap();
+    let stored_proxy = config.proxy.expect("Operation should succeed");
     assert_eq!(stored_proxy.host, Some("proxy.example.com".to_string()));
     assert_eq!(stored_proxy.port, Some(8080));
 }
@@ -92,7 +92,7 @@ async fn test_clear_proxy() {
         bypass_list: vec![],
     };
     
-    manager.set_proxy(Some(proxy)).await.unwrap();
+    manager.set_proxy(Some(proxy)).await.expect("Operation should succeed");
     
     // Clear it
     let result = manager.set_proxy(None).await;
@@ -153,13 +153,13 @@ async fn test_multiple_config_updates() {
     // First update
     let mut config1 = ChromiumEngineConfig::default();
     config1.headless = true;
-    manager.update_chromium_config(config1).await.unwrap();
+    manager.update_chromium_config(config1).await.expect("Update chromium config should succeed");
     
     // Second update
     let mut config2 = ChromiumEngineConfig::default();
     config2.headless = false;
     config2.stealth_mode = false;
-    manager.update_chromium_config(config2).await.unwrap();
+    manager.update_chromium_config(config2).await.expect("Update chromium config should succeed");
     
     // Verify latest config
     let final_config = manager.get_config().await;
@@ -181,10 +181,10 @@ async fn test_proxy_with_authentication() {
         bypass_list: vec!["*.local".to_string(), "127.0.0.1".to_string()],
     };
     
-    manager.set_proxy(Some(proxy)).await.unwrap();
+    manager.set_proxy(Some(proxy)).await.expect("Operation should succeed");
     
     let config = manager.get_config().await;
-    let stored_proxy = config.proxy.unwrap();
+    let stored_proxy = config.proxy.expect("Operation should succeed");
     
     assert_eq!(stored_proxy.username, Some("admin".to_string()));
     assert_eq!(stored_proxy.password, Some("secret123".to_string()));
@@ -199,7 +199,7 @@ async fn test_config_persistence_across_gets() {
     config.viewport_width = 2560;
     config.viewport_height = 1440;
     
-    manager.update_chromium_config(config).await.unwrap();
+    manager.update_chromium_config(config).await.expect("Update chromium config should succeed");
     
     // Get config multiple times
     let config1 = manager.get_config().await;
@@ -230,7 +230,7 @@ async fn test_concurrent_config_reads() {
     // All should succeed and return the same value
     let mut results = Vec::new();
     while let Some(result) = set.join_next().await {
-        results.push(result.unwrap());
+        results.push(result.expect("Operation should succeed"));
     }
     
     assert_eq!(results.len(), 10);
@@ -256,7 +256,7 @@ async fn test_concurrent_config_writes() {
     
     // All writes should succeed
     while let Some(result) = set.join_next().await {
-        assert!(result.unwrap().is_ok());
+        assert!(result.expect("Operation should succeed").is_ok());
     }
     
     // Final config should have one of the written values
@@ -286,11 +286,11 @@ async fn test_proxy_with_different_types() {
             bypass_list: vec![],
         };
         
-        manager.set_proxy(Some(proxy.clone())).await.unwrap();
+        manager.set_proxy(Some(proxy.clone())).await.expect("Operation should succeed");
         
         let config = manager.get_config().await;
         assert!(config.proxy.is_some());
-        assert_eq!(config.proxy.as_ref().unwrap().proxy_type, proxy_type);
+        assert_eq!(config.proxy.as_ref().expect("As ref should succeed").proxy_type, proxy_type);
     }
 }
 
@@ -302,7 +302,7 @@ async fn test_config_cloning() {
     config.headless = true;
     config.stealth_mode = false;
     
-    manager.update_chromium_config(config).await.unwrap();
+    manager.update_chromium_config(config).await.expect("Update chromium config should succeed");
     
     let config1 = manager.get_config().await;
     let config2 = config1.clone();

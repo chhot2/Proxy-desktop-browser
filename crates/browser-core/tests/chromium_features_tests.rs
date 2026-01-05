@@ -47,7 +47,7 @@ async fn test_fingerprint_spoofing() {
     
     sleep(Duration::from_millis(500)).await;
     
-    shutdown_browser(engine).await.unwrap();
+    shutdown_browser(engine).await.expect("Operation should succeed");
 }
 
 #[tokio::test]
@@ -73,7 +73,7 @@ async fn test_geolocation_spoofing() {
     
     sleep(Duration::from_millis(500)).await;
     
-    shutdown_browser(engine).await.unwrap();
+    shutdown_browser(engine).await.expect("Operation should succeed");
 }
 
 #[tokio::test]
@@ -95,7 +95,7 @@ async fn test_network_throttling() {
     
     sleep(Duration::from_millis(500)).await;
     
-    shutdown_browser(engine).await.unwrap();
+    shutdown_browser(engine).await.expect("Operation should succeed");
 }
 
 #[tokio::test]
@@ -120,7 +120,7 @@ async fn test_custom_network_condition() {
     
     sleep(Duration::from_millis(500)).await;
     
-    shutdown_browser(engine).await.unwrap();
+    shutdown_browser(engine).await.expect("Operation should succeed");
 }
 
 #[tokio::test]
@@ -175,7 +175,7 @@ async fn test_all_features_combined() {
     
     sleep(Duration::from_secs(1)).await;
     
-    shutdown_browser(engine).await.unwrap();
+    shutdown_browser(engine).await.expect("Operation should succeed");
 }
 
 #[tokio::test]
@@ -193,7 +193,7 @@ async fn test_headless_mode_fixed() {
     
     assert!(engine.get_config().headless);
     
-    shutdown_browser(engine).await.unwrap();
+    shutdown_browser(engine).await.expect("Operation should succeed");
     
     // Test that headless=false shows GUI
     let mut config2 = create_test_config();
@@ -205,7 +205,7 @@ async fn test_headless_mode_fixed() {
     
     assert!(!engine2.get_config().headless);
     
-    shutdown_browser(engine2).await.unwrap();
+    shutdown_browser(engine2).await.expect("Operation should succeed");
 }
 
 #[test]

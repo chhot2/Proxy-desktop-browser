@@ -58,6 +58,7 @@ use tokio::sync::RwLock;
 
 /// Retry configuration for operations that may fail
 #[derive(Debug, Clone)]
+/// Represents a RetryConfig.
 pub struct RetryConfig {
     /// Maximum number of retry attempts
     pub max_attempts: u32,
@@ -195,12 +196,14 @@ impl RateLimiter {
 
 /// Circuit breaker for preventing cascade failures
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+/// Enumeration of CircuitState variants.
 pub enum CircuitState {
     Closed,
     Open,
     HalfOpen,
 }
 
+/// Represents a CircuitBreaker.
 pub struct CircuitBreaker {
     /// Current state
     state: Arc<RwLock<CircuitState>>,
@@ -406,6 +409,7 @@ pub struct MetricsCollector {
 }
 
 impl MetricsCollector {
+    /// Creates a new new.
     pub fn new() -> Self {
         Self {
             counters: Arc::new(RwLock::new(HashMap::new())),
@@ -508,6 +512,7 @@ impl Default for MetricsCollector {
 }
 
 #[derive(Debug, Clone, Default)]
+/// Represents a HistogramStats.
 pub struct HistogramStats {
     pub count: usize,
     pub sum: f64,
@@ -520,6 +525,7 @@ pub struct HistogramStats {
 }
 
 #[derive(Debug, Clone)]
+/// Represents a MetricsSnapshot.
 pub struct MetricsSnapshot {
     pub counters: HashMap<String, u64>,
     pub gauges: HashMap<String, f64>,

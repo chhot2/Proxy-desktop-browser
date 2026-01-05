@@ -5,6 +5,7 @@ use tokio::sync::RwLock;
 use tracing::warn;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+/// Enumeration of ProxyType variants.
 pub enum ProxyType {
     Direct,
     Http,
@@ -20,6 +21,7 @@ impl Default for ProxyType {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// Represents a ProxySettings.
 pub struct ProxySettings {
     pub proxy_type: ProxyType,
     pub host: Option<String>,
@@ -45,6 +47,7 @@ impl Default for ProxySettings {
 }
 
 impl ProxySettings {
+    /// Converts to url.
     pub fn to_url(&self) -> Option<String> {
         if self.proxy_type == ProxyType::Direct {
             return None;
@@ -70,12 +73,14 @@ impl ProxySettings {
         Some(format!("{}://{}{}:{}", scheme, auth, host, port))
     }
 
+    /// Checks if configured.
     pub fn is_configured(&self) -> bool {
         self.proxy_type != ProxyType::Direct && self.host.is_some() && self.port.is_some()
     }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a FreeProxy.
 pub struct FreeProxy {
     pub ip: String,
     pub port: u16,
@@ -91,6 +96,7 @@ pub struct FreeProxy {
 }
 
 impl FreeProxy {
+    /// Converts to proxy settings.
     pub fn to_proxy_settings(&self) -> ProxySettings {
         ProxySettings {
             proxy_type: self.protocol.clone(),
@@ -105,6 +111,7 @@ impl FreeProxy {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a ProxyTestResult.
 pub struct ProxyTestResult {
     pub proxy: FreeProxy,
     pub is_working: bool,
@@ -113,6 +120,7 @@ pub struct ProxyTestResult {
     pub error: Option<String>,
 }
 
+/// Represents a ProxyManager.
 pub struct ProxyManager {
     settings: Arc<RwLock<ProxySettings>>,
     free_proxies: Arc<RwLock<Vec<FreeProxy>>>,
@@ -120,6 +128,7 @@ pub struct ProxyManager {
 }
 
 impl ProxyManager {
+    /// Creates a new new.
     pub fn new() -> Self {
         Self {
             settings: Arc::new(RwLock::new(ProxySettings::default())),
@@ -128,18 +137,22 @@ impl ProxyManager {
         }
     }
 
+    /// Gets the settings.
     pub async fn get_settings(&self) -> ProxySettings {
         self.settings.read().await.clone()
     }
 
+    /// Sets the settings.
     pub async fn set_settings(&self, settings: ProxySettings) {
         *self.settings.write().await = settings;
     }
 
+    /// Gets the free proxies.
     pub async fn get_free_proxies(&self) -> Vec<FreeProxy> {
         self.free_proxies.read().await.clone()
     }
 
+    /// Adds a free proxies.
     pub async fn add_free_proxies(&self, proxies: Vec<FreeProxy>) {
         let mut list = self.free_proxies.write().await;
         for proxy in proxies {
@@ -149,23 +162,28 @@ impl ProxyManager {
         }
     }
 
+    /// Sets the active proxy.
     pub async fn set_active_proxy(&self, proxy: Option<FreeProxy>) {
         *self.active_proxy.write().await = proxy;
     }
 
+    /// Gets the active proxy.
     pub async fn get_active_proxy(&self) -> Option<FreeProxy> {
         self.active_proxy.read().await.clone()
     }
 
+    /// Removes the dead proxies.
     pub async fn remove_dead_proxies(&self) {
         let mut list = self.free_proxies.write().await;
         list.retain(|p| p.is_working);
     }
 
+    /// Clears proxies.
     pub async fn clear_proxies(&self) {
         self.free_proxies.write().await.clear();
     }
 
+    /// Gets the effective proxy url.
     pub async fn get_effective_proxy_url(&self) -> Option<String> {
         // First check if there's an active free proxy
         if let Some(active) = self.active_proxy.read().await.as_ref() {
@@ -175,6 +193,7 @@ impl ProxyManager {
         self.settings.read().await.to_url()
     }
 
+    /// Fetches proxies.
     pub async fn fetch_proxies(&self) -> Result<usize, Box<dyn std::error::Error>> {
         // Try to fetch from provider first
         match crate::FreeIpProviderManager::new() {

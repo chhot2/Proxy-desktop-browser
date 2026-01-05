@@ -25,6 +25,7 @@ pub struct PrivacyFortress {
 
 /// Privacy configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a PrivacyConfig.
 pub struct PrivacyConfig {
     /// Enable tracker blocking
     pub block_trackers: bool,
@@ -76,6 +77,7 @@ impl Default for PrivacyConfig {
 
 /// Cookie isolation levels
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+/// Enumeration of CookieIsolationLevel variants.
 pub enum CookieIsolationLevel {
     None,      // No isolation
     Domain,    // Isolate by domain
@@ -91,6 +93,7 @@ impl Default for CookieIsolationLevel {
 
 /// Tracker blocker component
 #[derive(Debug)]
+/// Represents a TrackerBlocker.
 pub struct TrackerBlocker {
     known_trackers: HashSet<String>,
     blocked_requests: u64,
@@ -100,6 +103,7 @@ pub struct TrackerBlocker {
 
 /// Blocking rule
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a BlockingRule.
 pub struct BlockingRule {
     pub pattern: String,
     pub rule_type: BlockingRuleType,
@@ -108,6 +112,7 @@ pub struct BlockingRule {
 
 /// Blocking rule types
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+/// Enumeration of BlockingRuleType variants.
 pub enum BlockingRuleType {
     Tracker,
     Analytics,
@@ -218,6 +223,7 @@ impl Default for TrackerBlocker {
 
 /// Tracker blocking statistics
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a TrackerStats.
 pub struct TrackerStats {
     pub blocked_requests: u64,
     pub allowed_requests: u64,
@@ -228,6 +234,7 @@ pub struct TrackerStats {
 
 /// Fingerprint protector component
 #[derive(Debug)]
+/// Represents a FingerprintProtector.
 pub struct FingerprintProtector {
     randomized_values: FingerprintValues,
     protection_level: u8,
@@ -236,6 +243,7 @@ pub struct FingerprintProtector {
 
 /// Randomized fingerprint values
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a FingerprintValues.
 pub struct FingerprintValues {
     /// Canvas noise seed
     pub canvas_noise_seed: u64,
@@ -414,6 +422,7 @@ impl Default for FingerprintProtector {
 
 /// Privacy cookie manager
 #[derive(Debug)]
+/// Represents a PrivacyCookieManager.
 pub struct PrivacyCookieManager {
     containers: HashMap<String, CookieContainer>,
     third_party_blocked: u64,
@@ -422,6 +431,7 @@ pub struct PrivacyCookieManager {
 
 /// Cookie container for isolation
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a CookieContainer.
 pub struct CookieContainer {
     pub id: String,
     pub domain: String,
@@ -492,6 +502,7 @@ impl Default for PrivacyCookieManager {
 
 /// Cookie statistics
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a CookieStats.
 pub struct CookieStats {
     pub containers: usize,
     pub total_cookies: usize,
@@ -501,6 +512,7 @@ pub struct CookieStats {
 
 /// Privacy score calculator
 #[derive(Debug, Default)]
+/// Represents a PrivacyScore.
 pub struct PrivacyScore {
     trackers_blocked: u64,
     fingerprint_protected: bool,
@@ -564,6 +576,7 @@ impl PrivacyScore {
 
 /// Privacy grade
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+/// Enumeration of PrivacyGrade variants.
 pub enum PrivacyGrade {
     A,
     B,
@@ -574,6 +587,7 @@ pub enum PrivacyGrade {
 
 /// Leak prevention component
 #[derive(Debug)]
+/// Represents a LeakPrevention.
 pub struct LeakPrevention {
     webrtc_blocked: u64,
     dns_leaks_prevented: u64,
@@ -640,6 +654,7 @@ impl Default for LeakPrevention {
 
 /// Leak prevention statistics
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a LeakPreventionStats.
 pub struct LeakPreventionStats {
     pub webrtc_blocked: u64,
     pub dns_leaks_prevented: u64,
@@ -788,6 +803,7 @@ impl PrivacyFortress {
 
 /// Privacy score result
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a PrivacyScoreResult.
 pub struct PrivacyScoreResult {
     pub score: u32,
     pub grade: PrivacyGrade,
@@ -796,6 +812,7 @@ pub struct PrivacyScoreResult {
 
 /// Comprehensive privacy report
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a PrivacyReport.
 pub struct PrivacyReport {
     pub score: PrivacyScoreResult,
     pub trackers: TrackerStats,

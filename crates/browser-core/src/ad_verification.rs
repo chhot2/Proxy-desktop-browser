@@ -8,6 +8,7 @@ use chrono::{DateTime, Utc};
 
 /// Ad verification standards supported
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+/// Enumeration of VerificationStandard variants.
 pub enum VerificationStandard {
     /// Media Rating Council standard
     MRC,
@@ -27,6 +28,7 @@ impl Default for VerificationStandard {
 
 /// Ad format types for verification
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+/// Enumeration of AdFormat variants.
 pub enum AdFormat {
     Display,
     Video,
@@ -39,6 +41,7 @@ pub enum AdFormat {
 
 /// Viewability status according to MRC/IAB standards
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+/// Enumeration of ViewabilityStatus variants.
 pub enum ViewabilityStatus {
     /// Ad is viewable (meets MRC standards)
     Viewable,
@@ -52,6 +55,7 @@ pub enum ViewabilityStatus {
 
 /// Ad impression verification result
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a ImpressionVerification.
 pub struct ImpressionVerification {
     pub impression_id: String,
     pub ad_id: String,
@@ -67,6 +71,7 @@ pub struct ImpressionVerification {
 
 /// Fraud detection signals
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+/// Enumeration of FraudSignal variants.
 pub enum FraudSignal {
     /// Bot-like behavior detected
     BotTraffic,
@@ -92,6 +97,7 @@ pub enum FraudSignal {
 
 /// VAST (Video Ad Serving Template) verification
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a VastVerification.
 pub struct VastVerification {
     pub vast_version: String,
     pub ad_id: String,
@@ -106,6 +112,7 @@ pub struct VastVerification {
 
 /// VAST tracking event types
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+/// Enumeration of VastTrackingEvent variants.
 pub enum VastTrackingEvent {
     Impression,
     Start,
@@ -125,6 +132,7 @@ pub enum VastTrackingEvent {
 
 /// VPAID (Video Player-Ad Interface Definition) verification
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a VpaidVerification.
 pub struct VpaidVerification {
     pub vpaid_version: String,
     pub ad_unit_type: String,
@@ -138,6 +146,7 @@ pub struct VpaidVerification {
 
 /// Ad verification configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a AdVerificationConfig.
 pub struct AdVerificationConfig {
     /// Verification standard to use
     pub standard: VerificationStandard,
@@ -174,6 +183,7 @@ impl Default for AdVerificationConfig {
 
 /// Ad verification session for tracking
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a VerificationSession.
 pub struct VerificationSession {
     pub session_id: String,
     pub started_at: DateTime<Utc>,
@@ -194,6 +204,7 @@ pub struct AdVerificationManager {
 }
 
 impl AdVerificationManager {
+    /// Creates a new new.
     pub fn new(config: AdVerificationConfig) -> Self {
         Self {
             config: Arc::new(RwLock::new(config)),
@@ -502,6 +513,7 @@ impl AdVerificationManager {
 
 /// Data for verifying an impression
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a ImpressionData.
 pub struct ImpressionData {
     pub ad_id: String,
     pub ad_format: AdFormat,
@@ -517,6 +529,7 @@ pub struct ImpressionData {
 
 /// Session statistics
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a SessionStats.
 pub struct SessionStats {
     pub session_id: String,
     pub total_impressions: u32,

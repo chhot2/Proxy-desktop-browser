@@ -21,6 +21,7 @@ struct InternalTestResult {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a ValidationResult.
 pub struct ValidationResult {
     pub is_working: bool,
     pub response_time_ms: u64,
@@ -33,6 +34,7 @@ pub struct ValidationResult {
 }
 
 #[derive(Debug, Clone)]
+/// Represents a ProxyValidatorConfig.
 pub struct ProxyValidatorConfig {
     pub timeout: Duration,
     pub concurrent_checks: usize,
@@ -55,12 +57,14 @@ impl Default for ProxyValidatorConfig {
     }
 }
 
+/// Represents a ProxyValidator.
 pub struct ProxyValidator {
     config: ProxyValidatorConfig,
     semaphore: Arc<Semaphore>,
 }
 
 impl ProxyValidator {
+    /// Creates a new new.
     pub fn new(config: ProxyValidatorConfig) -> Self {
         Self {
             semaphore: Arc::new(Semaphore::new(config.concurrent_checks)),
@@ -68,6 +72,7 @@ impl ProxyValidator {
         }
     }
 
+    /// Validates the proxy.
     pub async fn validate_proxy(&self, proxy: &FreeProxy) -> Result<ValidationResult> {
         let _permit = self.semaphore.acquire().await
             .map_err(|e| anyhow!("Failed to acquire semaphore: {}", e))?;
@@ -215,6 +220,7 @@ impl ProxyValidator {
         Ok(local_ip.ip == detected_ip)
     }
 
+    /// Validates the batch.
     pub async fn validate_batch(&self, proxies: &[FreeProxy]) -> Vec<(FreeProxy, ValidationResult)> {
         let mut results = Vec::new();
         
@@ -263,6 +269,7 @@ impl ProxyValidator {
 }
 
 #[allow(dead_code)]
+/// Represents a ProxyHealthChecker.
 pub struct ProxyHealthChecker {
     validator: ProxyValidator,
     check_interval: Duration,
@@ -271,6 +278,7 @@ pub struct ProxyHealthChecker {
 }
 
 impl ProxyHealthChecker {
+    /// Creates a new new.
     pub fn new(
         validator: ProxyValidator,
         check_interval: Duration,
@@ -285,6 +293,7 @@ impl ProxyHealthChecker {
         }
     }
 
+    /// Starts the health monitoring.
     pub async fn start_health_monitoring(&self, proxies: Arc<tokio::sync::RwLock<Vec<FreeProxy>>>) {
         let mut interval = tokio::time::interval(self.check_interval);
         
@@ -332,6 +341,7 @@ use tokio::sync::RwLock;
 
 /// Represents a quarantined proxy with failure tracking
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a QuarantinedProxy.
 pub struct QuarantinedProxy {
     pub proxy: FreeProxy,
     pub consecutive_failures: u32,
@@ -349,6 +359,7 @@ pub struct ProxyQuarantineManager {
 }
 
 impl ProxyQuarantineManager {
+    /// Creates a new new.
     pub fn new(
         max_consecutive_failures: u32,
         quarantine_duration: Duration,
@@ -484,6 +495,7 @@ impl ProxyQuarantineManager {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a QuarantineStats.
 pub struct QuarantineStats {
     pub total_quarantined: usize,
     pub actively_quarantined: usize,
@@ -497,6 +509,7 @@ pub struct QuarantineStats {
 
 /// Configuration for geographic verification
 #[derive(Debug, Clone)]
+/// Represents a GeoVerificationConfig.
 pub struct GeoVerificationConfig {
     pub enabled: bool,
     pub tolerance_km: f64,
@@ -518,6 +531,7 @@ impl Default for GeoVerificationConfig {
 
 /// Geographic verification result
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a GeoVerificationResult.
 pub struct GeoVerificationResult {
     pub is_verified: bool,
     pub expected_country: String,
@@ -535,6 +549,7 @@ pub struct GeoVerifier {
 }
 
 impl GeoVerifier {
+    /// Creates a new new.
     pub fn new(config: GeoVerificationConfig) -> Result<Self> {
         Ok(Self {
             config,
@@ -683,6 +698,7 @@ pub struct EnhancedProxyHealthChecker {
 }
 
 impl EnhancedProxyHealthChecker {
+    /// Creates a new new.
     pub fn new(
         validator: ProxyValidator,
         quarantine_manager: ProxyQuarantineManager,

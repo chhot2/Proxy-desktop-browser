@@ -26,6 +26,7 @@ pub struct ReaderMode {
 
 /// Reader mode configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a ReaderModeConfig.
 pub struct ReaderModeConfig {
     /// Font family
     pub font_family: String,
@@ -68,6 +69,7 @@ impl Default for ReaderModeConfig {
 
 /// Reader mode themes
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+/// Enumeration of ReaderTheme variants.
 pub enum ReaderTheme {
     Light,
     Dark,
@@ -78,6 +80,7 @@ pub enum ReaderTheme {
 
 /// Extracted article content
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a ExtractedArticle.
 pub struct ExtractedArticle {
     pub url: String,
     pub title: String,
@@ -93,6 +96,7 @@ pub struct ExtractedArticle {
 
 /// Article image
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a ArticleImage.
 pub struct ArticleImage {
     pub src: String,
     pub alt: Option<String>,
@@ -100,6 +104,7 @@ pub struct ArticleImage {
 }
 
 impl ReaderMode {
+    /// Creates a new new.
     pub fn new() -> Self {
         Self {
             config: ReaderModeConfig::default(),
@@ -107,6 +112,7 @@ impl ReaderMode {
         }
     }
 
+    /// Configures with config.
     pub fn with_config(config: ReaderModeConfig) -> Self {
         Self {
             config,
@@ -337,6 +343,7 @@ pub struct MediaPlayer {
 
 /// Media player configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a MediaPlayerConfig.
 pub struct MediaPlayerConfig {
     /// Default volume (0.0 - 1.0)
     pub default_volume: f64,
@@ -379,6 +386,7 @@ impl Default for MediaPlayerConfig {
 
 /// Video quality options
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+/// Enumeration of VideoQuality variants.
 pub enum VideoQuality {
     Auto,
     Quality144p,
@@ -394,6 +402,7 @@ pub enum VideoQuality {
 
 /// Media information
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a MediaInfo.
 pub struct MediaInfo {
     pub url: String,
     pub title: String,
@@ -406,6 +415,7 @@ pub struct MediaInfo {
 
 /// Media type
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+/// Enumeration of MediaType variants.
 pub enum MediaType {
     Video,
     Audio,
@@ -414,6 +424,7 @@ pub enum MediaType {
 }
 
 impl MediaPlayer {
+    /// Creates a new new.
     pub fn new() -> Self {
         Self {
             config: MediaPlayerConfig::default(),
@@ -566,6 +577,7 @@ pub struct ContentTransformer {
 
 /// Types of content transformations
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Enumeration of TransformationType variants.
 pub enum TransformationType {
     /// Simplify content for easier reading
     Simplify,
@@ -590,6 +602,7 @@ pub enum TransformationType {
 }
 
 impl ContentTransformer {
+    /// Creates a new new.
     pub fn new() -> Self {
         Self {
             transformations: Vec::new(),
@@ -673,6 +686,7 @@ pub struct AccessibilityManager {
 
 /// Accessibility configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a AccessibilityConfig.
 pub struct AccessibilityConfig {
     /// Enable screen reader support
     pub screen_reader_support: bool,
@@ -712,6 +726,7 @@ impl Default for AccessibilityConfig {
 
 /// Focus indicator styles
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+/// Enumeration of FocusIndicatorStyle variants.
 pub enum FocusIndicatorStyle {
     Default,
     HighVisibility,
@@ -721,6 +736,7 @@ pub enum FocusIndicatorStyle {
 
 /// Color blindness modes
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+/// Enumeration of ColorBlindnessMode variants.
 pub enum ColorBlindnessMode {
     None,
     Protanopia,    // Red-blind
@@ -730,6 +746,7 @@ pub enum ColorBlindnessMode {
 }
 
 impl AccessibilityManager {
+    /// Creates a new new.
     pub fn new() -> Self {
         Self {
             config: AccessibilityConfig::default(),
@@ -832,6 +849,7 @@ pub struct ContentEnhancementManager {
 }
 
 impl ContentEnhancementManager {
+    /// Creates a new new.
     pub fn new() -> Self {
         info!("Initializing Content Enhancement Manager");
         Self {
@@ -956,6 +974,7 @@ pub struct AdvancedLanguageDetector {
 
 /// Language profile for detection
 #[derive(Debug, Clone)]
+/// Represents a LanguageProfile.
 pub struct LanguageProfile {
     /// ISO 639-1 code
     pub code: String,
@@ -973,6 +992,7 @@ pub struct LanguageProfile {
 
 /// Language detection result
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a LanguageDetectionResult.
 pub struct LanguageDetectionResult {
     /// Detected language code
     pub language: String,
@@ -986,6 +1006,7 @@ pub struct LanguageDetectionResult {
 
 /// Script type classification
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+/// Enumeration of ScriptType variants.
 pub enum ScriptType {
     Latin,
     Cyrillic,
@@ -999,6 +1020,7 @@ pub enum ScriptType {
 }
 
 impl AdvancedLanguageDetector {
+    /// Creates a new new.
     pub fn new() -> Self {
         let mut detector = Self {
             min_text_length: 20,
@@ -1322,6 +1344,7 @@ pub struct TextAnalyzer;
 
 /// Text statistics result
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a TextStatistics.
 pub struct TextStatistics {
     pub char_count: usize,
     pub word_count: usize,

@@ -30,12 +30,16 @@ use crate::proxy::ProxySettings;
 
 /// Engine version - v1000 (1.0.0.0)
 pub const ENGINE_VERSION: u32 = 1000;
+/// Constant value for ENGINE VERSION STRING.
 pub const ENGINE_VERSION_STRING: &str = "1.0.0.0";
+/// Constant value for ENGINE NAME.
 pub const ENGINE_NAME: &str = "Custom Chromium Fork - Enhanced Edition";
+/// Constant value for ENGINE CARGO VERSION.
 pub const ENGINE_CARGO_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// Browser engine type selection
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+/// Enumeration of BrowserEngineType variants.
 pub enum BrowserEngineType {
     /// Use system's default webview (Tauri's built-in)
     #[default]
@@ -47,6 +51,7 @@ pub enum BrowserEngineType {
 /// Network condition preset for throttling
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[derive(Default)]
+/// Enumeration of NetworkCondition variants.
 pub enum NetworkCondition {
     /// No throttling
     #[default]
@@ -67,6 +72,7 @@ pub enum NetworkCondition {
 
 
 impl NetworkCondition {
+    /// Gets the params.
     pub fn get_params(&self) -> (f64, f64, f64) {
         match self {
             NetworkCondition::None => (-1.0, -1.0, 0.0),
@@ -82,6 +88,7 @@ impl NetworkCondition {
 
 /// Browser fingerprint configuration for anti-detection
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a FingerprintConfig.
 pub struct FingerprintConfig {
     /// Randomize canvas fingerprint
     pub randomize_canvas: bool,
@@ -142,6 +149,7 @@ impl Default for FingerprintConfig {
 
 /// Proxy authentication credentials
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a ProxyAuth.
 pub struct ProxyAuth {
     pub username: String,
     pub password: String,
@@ -149,6 +157,7 @@ pub struct ProxyAuth {
 
 /// Cookie isolation mode
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
+/// Enumeration of CookieIsolationMode variants.
 pub enum CookieIsolationMode {
     /// No isolation - cookies shared across tabs
     #[default]
@@ -163,6 +172,7 @@ pub enum CookieIsolationMode {
 
 /// Configuration for the integrated Chromium engine
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a ChromiumEngineConfig.
 pub struct ChromiumEngineConfig {
     /// Path to Chrome/Chromium executable (optional, will auto-detect if not set)
     pub executable_path: Option<PathBuf>,
@@ -206,6 +216,7 @@ pub struct ChromiumEngineConfig {
 
 /// Geolocation coordinates for spoofing
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a Geolocation.
 pub struct Geolocation {
     pub latitude: f64,
     pub longitude: f64,
@@ -240,6 +251,7 @@ impl Default for ChromiumEngineConfig {
 
 /// Tab state for Chromium engine
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a ChromiumTab.
 pub struct ChromiumTab {
     pub id: String,
     pub url: String,
@@ -252,6 +264,7 @@ pub struct ChromiumTab {
 
 /// Performance metrics for the engine
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a EngineMetrics.
 pub struct EngineMetrics {
     pub page_loads: u64,
     pub total_load_time_ms: u128,
@@ -280,6 +293,7 @@ impl Default for EngineMetrics {
 
 /// Engine metadata and version information
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a EngineInfo.
 pub struct EngineInfo {
     pub version: u32,
     pub version_string: String,
@@ -1179,6 +1193,7 @@ pub struct BrowserEngineManager {
 }
 
 impl BrowserEngineManager {
+    /// Creates a new new.
     pub fn new() -> Self {
         Self {
             engine_type: Arc::new(RwLock::new(BrowserEngineType::System)),
@@ -1282,6 +1297,7 @@ impl BrowserEngineManager {
 
 /// Capabilities of the browser engine
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a EngineCapabilities.
 pub struct EngineCapabilities {
     pub per_tab_proxy: bool,
     pub webrtc_protection: bool,

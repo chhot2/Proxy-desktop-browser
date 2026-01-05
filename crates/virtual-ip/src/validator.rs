@@ -13,12 +13,14 @@ struct IPInfoResponse {
     timezone: String,
 }
 
+/// Represents a IPValidator.
 pub struct IPValidator {
     #[allow(dead_code)]
     client: Client,
 }
 
 impl IPValidator {
+    /// Creates a new new.
     pub fn new() -> Self {
         Self {
             client: Client::new(),
@@ -65,6 +67,7 @@ impl IPValidator {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+/// Represents a ValidationReport.
 pub struct ValidationReport {
     pub ip_matches: bool,
     pub webrtc_leaks: bool,

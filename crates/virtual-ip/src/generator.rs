@@ -6,24 +6,29 @@ use rand::{thread_rng, Rng};
 use std::net::Ipv4Addr;
 
 #[derive(Clone)]
+/// Represents a IPGenerator.
 pub struct IPGenerator {
     countries: Vec<Country>,
     ranges: Vec<IPRange>,
 }
 
 impl IPGenerator {
+    /// Creates a new new.
     pub fn new(countries: Vec<Country>, ranges: Vec<IPRange>) -> Self {
         Self { countries, ranges }
     }
 
+    /// Lists countries.
     pub fn list_countries(&self) -> Vec<Country> {
         self.countries.clone()
     }
 
+    /// Gets the country.
     pub fn get_country(&self, code: &str) -> Option<&Country> {
         self.countries.iter().find(|c| c.code.eq_ignore_ascii_case(code))
     }
 
+    /// Generates random.
     pub fn generate_random(&self) -> Result<VirtualIP> {
         let mut rng = thread_rng();
         if self.countries.is_empty() {
@@ -34,6 +39,7 @@ impl IPGenerator {
         self.generate_for_country(&country.code)
     }
 
+    /// Generates for country.
     pub fn generate_for_country(&self, code: &str) -> Result<VirtualIP> {
         let country = self
             .get_country(code)

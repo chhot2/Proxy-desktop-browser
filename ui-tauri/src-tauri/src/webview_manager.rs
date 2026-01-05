@@ -1,3 +1,11 @@
+//! Webview Manager Module
+//!
+//! Provides webview tab management for the Tauri application including:
+//! - Creating new browser tabs with optional proxy settings
+//! - Navigation control (forward, back, reload)
+//! - Tab lifecycle management (create, close, focus)
+//! - Tab state tracking (URL, title, loading status)
+
 use anyhow::{anyhow, Result};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -7,6 +15,7 @@ use tokio::sync::RwLock;
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a WebviewTab.
 pub struct WebviewTab {
     pub tab_id: String,
     pub window_label: String,
@@ -18,6 +27,7 @@ pub struct WebviewTab {
     pub created_at: std::time::SystemTime,
 }
 
+/// Represents a WebviewManager.
 pub struct WebviewManager {
     app_handle: AppHandle,
     tabs: Arc<RwLock<HashMap<String, WebviewTab>>>,
@@ -25,6 +35,7 @@ pub struct WebviewManager {
 }
 
 impl WebviewManager {
+    /// Creates a new new.
     pub fn new(app_handle: AppHandle) -> Self {
         Self {
             app_handle,
@@ -157,6 +168,7 @@ impl WebviewManager {
 
     /// Get tab by ID
     #[allow(dead_code)]
+    /// Gets the tab.
     pub async fn get_tab(&self, tab_id: &str) -> Option<WebviewTab> {
         self.tabs.read().await.get(tab_id).cloned()
     }
@@ -173,6 +185,7 @@ impl WebviewManager {
 
 // Tauri command handlers
 #[tauri::command]
+/// Creates a new webview tab with proxy.
 pub async fn create_webview_tab_with_proxy(
     app_handle: tauri::AppHandle,
     url: Option<String>,
@@ -183,36 +196,42 @@ pub async fn create_webview_tab_with_proxy(
 }
 
 #[tauri::command]
+/// Creates a new webview tab.
 pub async fn create_webview_tab(app_handle: tauri::AppHandle, url: Option<String>) -> Result<WebviewTab, String> {
     let manager = app_handle.state::<WebviewManager>();
     manager.create_tab_with_proxy(url, None).await.map_err(|e| e.to_string())
 }
 
 #[tauri::command]
+/// Performs navigate webview tab operation.
 pub async fn navigate_webview_tab(app_handle: tauri::AppHandle, tab_id: String, url: String) -> Result<(), String> {
     let manager = app_handle.state::<WebviewManager>();
     manager.navigate(&tab_id, &url).await.map_err(|e| e.to_string())
 }
 
 #[tauri::command]
+/// Closes webview tab.
 pub async fn close_webview_tab(app_handle: tauri::AppHandle, tab_id: String) -> Result<(), String> {
     let manager = app_handle.state::<WebviewManager>();
     manager.close_tab(&tab_id).await.map_err(|e| e.to_string())
 }
 
 #[tauri::command]
+/// Performs focus webview tab operation.
 pub async fn focus_webview_tab(app_handle: tauri::AppHandle, tab_id: String) -> Result<(), String> {
     let manager = app_handle.state::<WebviewManager>();
     manager.focus_tab(&tab_id).await.map_err(|e| e.to_string())
 }
 
 #[tauri::command]
+/// Gets the webview tabs.
 pub async fn get_webview_tabs(app_handle: tauri::AppHandle) -> Result<Vec<WebviewTab>, String> {
     let manager = app_handle.state::<WebviewManager>();
     Ok(manager.list_tabs().await)
 }
 
 #[tauri::command]
+/// Performs navigation changed operation.
 pub async fn navigation_changed(
     app_handle: tauri::AppHandle,
     tab_id: String,
@@ -234,6 +253,7 @@ pub async fn navigation_changed(
 }
 
 #[tauri::command]
+/// Performs title changed operation.
 pub async fn title_changed(
     app_handle: tauri::AppHandle,
     tab_id: String,

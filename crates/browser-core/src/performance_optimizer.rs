@@ -22,6 +22,7 @@ pub struct PerformanceOptimizer {
 
 /// Performance configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a PerformanceConfig.
 pub struct PerformanceConfig {
     /// Enable lazy loading
     pub lazy_loading_enabled: bool,
@@ -61,6 +62,7 @@ impl Default for PerformanceConfig {
 
 /// Predictive cache for resources
 #[derive(Debug)]
+/// Represents a PredictiveCache.
 pub struct PredictiveCache {
     entries: HashMap<String, CacheEntry>,
     access_history: VecDeque<String>,
@@ -73,6 +75,7 @@ pub struct PredictiveCache {
 
 /// Cache entry
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a CacheEntry.
 pub struct CacheEntry {
     pub url: String,
     pub content_type: String,
@@ -86,6 +89,7 @@ pub struct CacheEntry {
 
 /// Cache priority levels
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+/// Enumeration of CachePriority variants.
 pub enum CachePriority {
     Critical,   // Core resources (HTML, critical CSS)
     High,       // Important resources (JS, fonts)
@@ -102,6 +106,7 @@ impl Default for CachePriority {
 
 /// Access prediction model using simple frequency analysis
 #[derive(Debug, Default)]
+/// Represents a AccessPredictionModel.
 pub struct AccessPredictionModel {
     frequency_map: HashMap<String, u32>,
     transition_map: HashMap<String, HashMap<String, u32>>,
@@ -247,6 +252,7 @@ impl PredictiveCache {
 
 /// Cache statistics
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a CacheStats.
 pub struct CacheStats {
     pub total_entries: usize,
     pub total_size_mb: u64,
@@ -258,6 +264,7 @@ pub struct CacheStats {
 
 /// Performance metrics tracking
 #[derive(Debug, Default)]
+/// Represents a PerformanceMetrics.
 pub struct PerformanceMetrics {
     page_load_times: VecDeque<LoadTimeRecord>,
     resource_timings: HashMap<String, ResourceTiming>,
@@ -267,6 +274,7 @@ pub struct PerformanceMetrics {
 
 /// Load time record
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a LoadTimeRecord.
 pub struct LoadTimeRecord {
     pub url: String,
     pub load_time_ms: u64,
@@ -278,6 +286,7 @@ pub struct LoadTimeRecord {
 
 /// Resource timing information
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a ResourceTiming.
 pub struct ResourceTiming {
     pub url: String,
     pub resource_type: String,
@@ -291,6 +300,7 @@ pub struct ResourceTiming {
 
 /// Core Web Vitals metrics
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+/// Represents a CoreWebVitals.
 pub struct CoreWebVitals {
     /// Largest Contentful Paint (ms)
     pub lcp_ms: u64,
@@ -329,12 +339,14 @@ impl CoreWebVitals {
 
 /// Resource priority queue for loading
 #[derive(Debug, Default)]
+/// Represents a ResourcePriorityQueue.
 pub struct ResourcePriorityQueue {
     queues: HashMap<CachePriority, VecDeque<ResourceRequest>>,
 }
 
 /// Resource request
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a ResourceRequest.
 pub struct ResourceRequest {
     pub url: String,
     pub resource_type: String,
@@ -521,6 +533,7 @@ impl PerformanceOptimizer {
 
 /// Performance report
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a PerformanceReport.
 pub struct PerformanceReport {
     pub average_load_time_ms: u64,
     pub cache_stats: CacheStats,

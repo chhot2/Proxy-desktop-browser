@@ -51,8 +51,8 @@ fn test_browser_state_serialization() {
         history_index: 0,
     };
     
-    let json = serde_json::to_string(&state).unwrap();
-    let parsed: BrowserState = serde_json::from_str(&json).unwrap();
+    let json = serde_json::to_string(&state).expect("Failed to serialize to JSON");
+    let parsed: BrowserState = serde_json::from_str(&json).expect("Failed to parse JSON");
     
     assert_eq!(parsed.tab_id, state.tab_id);
     assert_eq!(parsed.current_url, state.current_url);
@@ -84,8 +84,8 @@ fn test_history_item_serialization() {
         timestamp: 1609459200,
     };
     
-    let json = serde_json::to_string(&item).unwrap();
-    let parsed: HistoryItem = serde_json::from_str(&json).unwrap();
+    let json = serde_json::to_string(&item).expect("Failed to serialize to JSON");
+    let parsed: HistoryItem = serde_json::from_str(&json).expect("Failed to parse JSON");
     
     assert_eq!(parsed.url, item.url);
     assert_eq!(parsed.timestamp, item.timestamp);
@@ -115,8 +115,8 @@ fn test_browser_settings_default() {
 fn test_browser_settings_serialization() {
     let settings = BrowserSettings::default();
     
-    let json = serde_json::to_string(&settings).unwrap();
-    let parsed: BrowserSettings = serde_json::from_str(&json).unwrap();
+    let json = serde_json::to_string(&settings).expect("Failed to serialize to JSON");
+    let parsed: BrowserSettings = serde_json::from_str(&json).expect("Failed to parse JSON");
     
     assert_eq!(parsed.user_agent, settings.user_agent);
     assert_eq!(parsed.webrtc_policy, settings.webrtc_policy);
@@ -131,8 +131,8 @@ fn test_webrtc_policy_variants() {
     ];
     
     for policy in policies {
-        let json = serde_json::to_string(&policy).unwrap();
-        let parsed: WebRtcPolicy = serde_json::from_str(&json).unwrap();
+        let json = serde_json::to_string(&policy).expect("Failed to serialize to JSON");
+        let parsed: WebRtcPolicy = serde_json::from_str(&json).expect("Failed to parse JSON");
         assert_eq!(parsed, policy);
     }
 }
@@ -164,7 +164,7 @@ async fn test_browser_controller_navigate() {
     let controller = BrowserController::new();
     controller.create_browser_state("tab-1").await;
     
-    let state = controller.navigate("tab-1", "https://example.com").await.unwrap();
+    let state = controller.navigate("tab-1", "https://example.com").await.expect("Navigation failed");
     
     assert_eq!(state.current_url, "https://example.com");
     assert!(state.is_loading);
@@ -178,23 +178,23 @@ async fn test_browser_controller_navigation_history() {
     controller.create_browser_state("tab-1").await;
     
     // Navigate to multiple pages
-    controller.navigate("tab-1", "https://page1.com").await.unwrap();
-    controller.navigate("tab-1", "https://page2.com").await.unwrap();
-    controller.navigate("tab-1", "https://page3.com").await.unwrap();
+    controller.navigate("tab-1", "https://page1.com").await.expect("Navigation failed");
+    controller.navigate("tab-1", "https://page2.com").await.expect("Navigation failed");
+    controller.navigate("tab-1", "https://page3.com").await.expect("Navigation failed");
     
-    let state = controller.get_state("tab-1").await.unwrap();
+    let state = controller.get_state("tab-1").await.expect("Failed to get browser state");
     assert_eq!(state.history.len(), 3);
     assert!(state.can_go_back);
     
     // Go back
-    let url = controller.go_back("tab-1").await.unwrap();
+    let url = controller.go_back("tab-1").await.expect("Go back failed");
     assert_eq!(url, Some("https://page2.com".to_string()));
     
-    let state = controller.get_state("tab-1").await.unwrap();
+    let state = controller.get_state("tab-1").await.expect("Failed to get browser state");
     assert!(state.can_go_forward);
     
     // Go forward
-    let url = controller.go_forward("tab-1").await.unwrap();
+    let url = controller.go_forward("tab-1").await.expect("Go forward failed");
     assert_eq!(url, Some("https://page3.com".to_string()));
 }
 
@@ -202,9 +202,9 @@ async fn test_browser_controller_navigation_history() {
 async fn test_browser_controller_reload() {
     let controller = BrowserController::new();
     controller.create_browser_state("tab-1").await;
-    controller.navigate("tab-1", "https://example.com").await.unwrap();
+    controller.navigate("tab-1", "https://example.com").await.expect("Navigation failed");
     
-    let url = controller.reload("tab-1").await.unwrap();
+    let url = controller.reload("tab-1").await.expect("Reload failed");
     assert_eq!(url, Some("https://example.com".to_string()));
 }
 
@@ -212,11 +212,11 @@ async fn test_browser_controller_reload() {
 async fn test_browser_controller_update_title() {
     let controller = BrowserController::new();
     controller.create_browser_state("tab-1").await;
-    controller.navigate("tab-1", "https://example.com").await.unwrap();
+    controller.navigate("tab-1", "https://example.com").await.expect("Navigation failed");
     
     controller.update_title("tab-1", "Example Domain").await;
     
-    let state = controller.get_state("tab-1").await.unwrap();
+    let state = controller.get_state("tab-1").await.expect("Failed to get browser state");
     assert_eq!(state.title, "Example Domain");
 }
 
@@ -226,11 +226,11 @@ async fn test_browser_controller_loading_state() {
     controller.create_browser_state("tab-1").await;
     
     controller.set_loading("tab-1", true).await;
-    let state = controller.get_state("tab-1").await.unwrap();
+    let state = controller.get_state("tab-1").await.expect("Failed to get browser state");
     assert!(state.is_loading);
     
     controller.stop_loading("tab-1").await;
-    let state = controller.get_state("tab-1").await.unwrap();
+    let state = controller.get_state("tab-1").await.expect("Failed to get browser state");
     assert!(!state.is_loading);
 }
 
@@ -299,11 +299,11 @@ async fn test_download_manager_start_download() {
         "https://example.com/file.zip",
         None,
         Some("tab-1"),
-    ).await.unwrap();
+    ).await.expect("Operation should succeed");
     
     assert!(!download_id.is_empty());
     
-    let download = manager.get_download(&download_id).await.unwrap();
+    let download = manager.get_download(&download_id).await.expect("Failed to get download");
     assert_eq!(download.url, "https://example.com/file.zip");
     assert_eq!(download.filename, "file.zip");
     assert_eq!(download.state, DownloadState::Pending);
@@ -318,9 +318,9 @@ async fn test_download_manager_custom_filename() {
         "https://example.com/file?id=123",
         Some("custom_name.zip"),
         None,
-    ).await.unwrap();
+    ).await.expect("Operation should succeed");
     
-    let download = manager.get_download(&download_id).await.unwrap();
+    let download = manager.get_download(&download_id).await.expect("Failed to get download");
     assert_eq!(download.filename, "custom_name.zip");
 }
 
@@ -332,12 +332,12 @@ async fn test_download_manager_progress() {
         "https://example.com/file.zip",
         None,
         None,
-    ).await.unwrap();
+    ).await.expect("Operation should succeed");
     
     // Update progress
     manager.update_progress(&download_id, 500, Some(1000)).await;
     
-    let download = manager.get_download(&download_id).await.unwrap();
+    let download = manager.get_download(&download_id).await.expect("Failed to get download");
     assert_eq!(download.received_bytes, 500);
     assert_eq!(download.total_bytes, Some(1000));
     assert_eq!(download.state, DownloadState::InProgress);
@@ -352,18 +352,18 @@ async fn test_download_manager_pause_resume() {
         "https://example.com/file.zip",
         None,
         None,
-    ).await.unwrap();
+    ).await.expect("Operation should succeed");
     
     manager.update_progress(&download_id, 100, Some(1000)).await;
     
     // Pause
-    manager.pause_download(&download_id).await.unwrap();
-    let download = manager.get_download(&download_id).await.unwrap();
+    manager.pause_download(&download_id).await.expect("Failed to pause download");
+    let download = manager.get_download(&download_id).await.expect("Failed to get download");
     assert_eq!(download.state, DownloadState::Paused);
     
     // Resume
-    manager.resume_download(&download_id).await.unwrap();
-    let download = manager.get_download(&download_id).await.unwrap();
+    manager.resume_download(&download_id).await.expect("Failed to resume download");
+    let download = manager.get_download(&download_id).await.expect("Failed to get download");
     assert_eq!(download.state, DownloadState::InProgress);
 }
 
@@ -375,11 +375,11 @@ async fn test_download_manager_cancel() {
         "https://example.com/file.zip",
         None,
         None,
-    ).await.unwrap();
+    ).await.expect("Operation should succeed");
     
-    manager.cancel_download(&download_id).await.unwrap();
+    manager.cancel_download(&download_id).await.expect("Failed to cancel download");
     
-    let download = manager.get_download(&download_id).await.unwrap();
+    let download = manager.get_download(&download_id).await.expect("Failed to get download");
     assert_eq!(download.state, DownloadState::Cancelled);
 }
 
@@ -391,12 +391,12 @@ async fn test_download_manager_complete() {
         "https://example.com/file.zip",
         None,
         None,
-    ).await.unwrap();
+    ).await.expect("Operation should succeed");
     
     manager.update_progress(&download_id, 1000, Some(1000)).await;
     manager.complete_download(&download_id).await;
     
-    let download = manager.get_download(&download_id).await.unwrap();
+    let download = manager.get_download(&download_id).await.expect("Failed to get download");
     assert_eq!(download.state, DownloadState::Completed);
     assert!(download.completed_at.is_some());
 }
@@ -409,11 +409,11 @@ async fn test_download_manager_fail() {
         "https://example.com/file.zip",
         None,
         None,
-    ).await.unwrap();
+    ).await.expect("Operation should succeed");
     
     manager.fail_download(&download_id, "Network error").await;
     
-    let download = manager.get_download(&download_id).await.unwrap();
+    let download = manager.get_download(&download_id).await.expect("Failed to get download");
     assert_eq!(download.state, DownloadState::Failed);
     assert_eq!(download.error, Some("Network error".to_string()));
 }
@@ -422,9 +422,9 @@ async fn test_download_manager_fail() {
 async fn test_download_manager_get_active() {
     let manager = DownloadManager::new(PathBuf::from("/tmp/downloads"));
     
-    let id1 = manager.start_download("https://example.com/1.zip", None, None).await.unwrap();
-    let id2 = manager.start_download("https://example.com/2.zip", None, None).await.unwrap();
-    let id3 = manager.start_download("https://example.com/3.zip", None, None).await.unwrap();
+    let id1 = manager.start_download("https://example.com/1.zip", None, None).await.expect("Failed to start download");
+    let id2 = manager.start_download("https://example.com/2.zip", None, None).await.expect("Failed to start download");
+    let id3 = manager.start_download("https://example.com/3.zip", None, None).await.expect("Failed to start download");
     
     manager.complete_download(&id2).await;
     
@@ -436,8 +436,8 @@ async fn test_download_manager_get_active() {
 async fn test_download_manager_clear_completed() {
     let manager = DownloadManager::new(PathBuf::from("/tmp/downloads"));
     
-    let id1 = manager.start_download("https://example.com/1.zip", None, None).await.unwrap();
-    let id2 = manager.start_download("https://example.com/2.zip", None, None).await.unwrap();
+    let id1 = manager.start_download("https://example.com/1.zip", None, None).await.expect("Failed to start download");
+    let id2 = manager.start_download("https://example.com/2.zip", None, None).await.expect("Failed to start download");
     
     manager.complete_download(&id1).await;
     
@@ -677,7 +677,7 @@ fn test_context_menu_item_submenu() {
     
     assert_eq!(item.item_type, ContextMenuItemType::Submenu);
     assert!(item.submenu.is_some());
-    assert_eq!(item.submenu.as_ref().unwrap().len(), 2);
+    assert_eq!(item.submenu.as_ref().expect("As ref should succeed").len(), 2);
 }
 
 #[test]
@@ -686,8 +686,8 @@ fn test_context_menu_item_serialization() {
         .with_shortcut("Ctrl+T")
         .with_icon("test.png");
     
-    let json = serde_json::to_string(&item).unwrap();
-    let parsed: ContextMenuItem = serde_json::from_str(&json).unwrap();
+    let json = serde_json::to_string(&item).expect("Failed to serialize to JSON");
+    let parsed: ContextMenuItem = serde_json::from_str(&json).expect("Failed to parse JSON");
     
     assert_eq!(parsed.id, item.id);
     assert_eq!(parsed.label, item.label);
@@ -712,8 +712,8 @@ fn test_context_type_variants() {
     ];
     
     for ctx_type in types {
-        let json = serde_json::to_string(&ctx_type).unwrap();
-        let parsed: ContextType = serde_json::from_str(&json).unwrap();
+        let json = serde_json::to_string(&ctx_type).expect("Failed to serialize to JSON");
+        let parsed: ContextType = serde_json::from_str(&json).expect("Failed to parse JSON");
         assert_eq!(parsed, ctx_type);
     }
 }

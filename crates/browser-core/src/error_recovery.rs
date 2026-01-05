@@ -27,6 +27,7 @@ pub struct ErrorRecoveryManager {
 
 /// Error recovery configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a ErrorRecoveryConfig.
 pub struct ErrorRecoveryConfig {
     /// Maximum retries before giving up
     pub max_retries: u32,
@@ -63,6 +64,7 @@ impl Default for ErrorRecoveryConfig {
 
 /// Error categories for classification
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+/// Enumeration of ErrorCategory variants.
 pub enum ErrorCategory {
     Network,
     Database,
@@ -107,6 +109,7 @@ impl ErrorCategory {
 
 /// Recovery strategy for different error types
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Enumeration of RecoveryStrategy variants.
 pub enum RecoveryStrategy {
     /// Retry the operation
     Retry { max_attempts: u32, delay_ms: u64 },
@@ -133,6 +136,7 @@ impl Default for RecoveryStrategy {
 
 /// Error record for history tracking
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a ErrorRecord.
 pub struct ErrorRecord {
     pub id: u64,
     pub category: ErrorCategory,
@@ -147,6 +151,7 @@ pub struct ErrorRecord {
 
 /// Circuit breaker for failure isolation
 #[derive(Debug, Clone)]
+/// Represents a CircuitBreaker.
 pub struct CircuitBreaker {
     pub name: String,
     pub state: CircuitState,
@@ -159,6 +164,7 @@ pub struct CircuitBreaker {
 
 /// Circuit breaker state
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+/// Enumeration of CircuitState variants.
 pub enum CircuitState {
     Closed,    // Normal operation
     Open,      // Failing, rejecting requests
@@ -222,6 +228,7 @@ impl CircuitBreaker {
 
 /// Recovery result
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Enumeration of RecoveryResult variants.
 pub enum RecoveryResult {
     Recovered { method: String },
     PartialRecovery { message: String },
@@ -231,6 +238,7 @@ pub enum RecoveryResult {
 
 /// Error statistics
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a ErrorStats.
 pub struct ErrorStats {
     pub total_errors: u64,
     pub recovered_errors: u64,
@@ -494,6 +502,7 @@ impl ErrorRecoveryManager {
 
 /// Crash prediction result
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a CrashPrediction.
 pub struct CrashPrediction {
     pub probability: f64,
     pub predicted_category: ErrorCategory,

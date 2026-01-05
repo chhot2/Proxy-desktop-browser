@@ -13,12 +13,14 @@ use tracing::{info, error};
 use virtual_ip::{Country, IPGenerator, IPValidator, VirtualIP};
 
 #[derive(Clone)]
+/// Represents a ApiServer.
 pub struct ApiServer {
     tab_manager: Arc<Mutex<TabIPManager>>,
     ip_generator: Arc<IPGenerator>,
 }
 
 impl ApiServer {
+    /// Creates a new new.
     pub fn new(tab_manager: Arc<Mutex<TabIPManager>>, ip_generator: Arc<IPGenerator>) -> Self {
         Self {
             tab_manager,
@@ -26,6 +28,7 @@ impl ApiServer {
         }
     }
 
+    /// Performs router operation.
     pub async fn router(self: Arc<Self>) -> Router {
         Router::new()
             // Tab endpoints
@@ -41,6 +44,7 @@ impl ApiServer {
             .with_state(self)
     }
 
+    /// Performs run operation.
     pub async fn run(self, port: u16) -> Result<()> {
         tracing_subscriber::fmt::init();
         let app = Arc::new(self).router().await;
@@ -164,6 +168,7 @@ async fn list_countries_handler(
 // ========= DTOs =========
 
 #[derive(Serialize, Deserialize)]
+/// Represents a TabResponse.
 pub struct TabResponse {
     pub tab_id: String,
     pub ip: String,
@@ -191,6 +196,7 @@ impl From<browser_core::TabProfile> for TabResponse {
 }
 
 #[derive(Serialize, Deserialize)]
+/// Represents a VirtualIPResponse.
 pub struct VirtualIPResponse {
     pub ip: String,
     pub country_code: String,
@@ -220,6 +226,7 @@ impl From<VirtualIP> for VirtualIPResponse {
 }
 
 #[derive(Serialize, Deserialize)]
+/// Represents a CountryResponse.
 pub struct CountryResponse {
     pub code: String,
     pub name: String,
@@ -245,6 +252,7 @@ impl From<Country> for CountryResponse {
 }
 
 #[derive(Serialize, Deserialize)]
+/// Represents a ValidationResponse.
 pub struct ValidationResponse {
     pub ip_matches: bool,
     pub webrtc_secure: bool,

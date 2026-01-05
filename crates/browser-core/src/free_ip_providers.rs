@@ -9,6 +9,7 @@ use crate::proxy::{FreeProxy, ProxyType};
 use crate::scraper_util;
 
 #[derive(Debug, Clone)]
+/// Enumeration of ProxyFilter variants.
 pub enum ProxyFilter {
     All,
     ByCountry(Vec<String>),
@@ -17,6 +18,7 @@ pub enum ProxyFilter {
 }
 
 #[async_trait]
+/// Trait defining ProxyProvider behavior.
 pub trait ProxyProvider: Send + Sync {
     fn name(&self) -> &str;
     fn rate_limit(&self) -> Duration;
@@ -49,6 +51,7 @@ pub trait ProxyProvider: Send + Sync {
 }
 
 #[derive(Debug, Clone)]
+/// Enumeration of FreeIpProvider variants.
 pub enum FreeIpProvider {
     ProxyScrape,
     GeoNode,
@@ -59,6 +62,7 @@ pub enum FreeIpProvider {
 }
 
 impl FreeIpProvider {
+    /// Performs all operation.
     pub fn all() -> Vec<Self> {
         vec![
             Self::ProxyScrape,
@@ -70,6 +74,7 @@ impl FreeIpProvider {
         ]
     }
 
+    /// Performs name operation.
     pub fn name(&self) -> &str {
         match self {
             Self::ProxyScrape => "ProxyScrape",
@@ -81,6 +86,7 @@ impl FreeIpProvider {
         }
     }
 
+    /// Performs rate limit operation.
     pub fn rate_limit(&self) -> Duration {
         match self {
             Self::ProxyScrape => Duration::from_secs(1),
@@ -92,6 +98,7 @@ impl FreeIpProvider {
         }
     }
 
+    /// Checks if api based.
     pub fn is_api_based(&self) -> bool {
         match self {
             Self::ProxyScrape | Self::GeoNode | Self::PubProxy => true,
@@ -100,6 +107,7 @@ impl FreeIpProvider {
     }
 }
 
+/// Represents a FreeIpProviderManager.
 pub struct FreeIpProviderManager {
     http_client: HttpClient,
     proxy_pool: Vec<FreeProxy>,
@@ -109,6 +117,7 @@ pub struct FreeIpProviderManager {
 }
 
 impl FreeIpProviderManager {
+    /// Creates a new new.
     pub fn new() -> Result<Self> {
         Ok(Self {
             http_client: HttpClient::new()?,
@@ -119,11 +128,13 @@ impl FreeIpProviderManager {
         })
     }
 
+    /// Configures with update interval.
     pub fn with_update_interval(mut self, interval: Duration) -> Self {
         self.update_interval = interval;
         self
     }
 
+    /// Fetches from provider.
     pub async fn fetch_from_provider(&mut self, provider: &FreeIpProvider) -> Result<Vec<FreeProxy>> {
         // Check rate limiting
         if let Some(last_fetch) = self.rate_limiters.get(&provider.name().to_string()) {
@@ -160,6 +171,7 @@ impl FreeIpProviderManager {
         result
     }
 
+    /// Fetches all.
     pub async fn fetch_all(&mut self) -> Vec<FreeProxy> {
         let mut all_proxies = Vec::new();
         
@@ -183,6 +195,7 @@ impl FreeIpProviderManager {
         all_proxies
     }
 
+    /// Updates the proxy pool.
     pub async fn update_proxy_pool(&mut self) -> Result<usize> {
         let proxies = self.fetch_all().await;
         let count = proxies.len();
@@ -249,16 +262,19 @@ impl FreeIpProviderManager {
         tested_proxies
     }
 
+    /// Gets the proxy pool.
     pub fn get_proxy_pool(&self) -> &[FreeProxy] {
         &self.proxy_pool
     }
 
+    /// Gets the working proxies.
     pub fn get_working_proxies(&self) -> Vec<&FreeProxy> {
         self.proxy_pool.iter()
             .filter(|p| p.is_working)
             .collect()
     }
 
+    /// Gets the random working proxy.
     pub fn get_random_working_proxy(&self) -> Option<&FreeProxy> {
         let working = self.get_working_proxies();
         if working.is_empty() {
@@ -268,6 +284,7 @@ impl FreeIpProviderManager {
         }
     }
 
+    /// Performs needs update operation.
     pub fn needs_update(&self) -> bool {
         let oldest_update = self.last_update.values().min();
         match oldest_update {
@@ -279,6 +296,7 @@ impl FreeIpProviderManager {
         }
     }
 
+    /// Starts the auto update task.
     pub fn start_auto_update_task(
         manager: std::sync::Arc<tokio::sync::RwLock<FreeIpProviderManager>>,
     ) -> tokio::task::JoinHandle<()> {
@@ -431,6 +449,7 @@ impl FreeIpProviderManager {
         Ok(proxies)
     }
 
+    /// Tests proxy.
     pub async fn test_proxy(&self, proxy: &FreeProxy) -> crate::proxy::ProxyTestResult {
         let settings = proxy.to_proxy_settings();
         

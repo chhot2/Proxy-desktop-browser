@@ -11,6 +11,7 @@ use std::num::NonZeroU32;
 
 use crate::proxy::ProxySettings;
 
+/// Represents a HttpClient.
 pub struct HttpClient {
     client: Client,
     enhanced_client: Option<ClientWithMiddleware>,
@@ -18,6 +19,7 @@ pub struct HttpClient {
 }
 
 impl HttpClient {
+    /// Creates a new new.
     pub fn new() -> Result<Self> {
         let client = Client::builder()
             .timeout(Duration::from_secs(30))
@@ -44,6 +46,7 @@ impl HttpClient {
         })
     }
 
+    /// Configures with proxy.
     pub fn with_proxy(proxy_settings: &ProxySettings) -> Result<Self> {
         let mut builder = Client::builder()
             .timeout(Duration::from_secs(30));
@@ -76,6 +79,7 @@ impl HttpClient {
         })
     }
 
+    /// Performs get operation.
     pub async fn get(&self, url: &str) -> Result<String> {
         let response = self.client.get(url).send().await?;
         let text = response.text().await?;
@@ -104,6 +108,7 @@ impl HttpClient {
         }
     }
 
+    /// Gets the json.
     pub async fn get_json<T: for<'de> Deserialize<'de>>(&self, url: &str) -> Result<T> {
         let response = self.client.get(url).send().await?;
         let json = response.json::<T>().await?;
@@ -162,6 +167,7 @@ impl HttpClient {
         }
     }
 
+    /// Performs client operation.
     pub fn client(&self) -> &Client {
         &self.client
     }
@@ -174,6 +180,7 @@ impl Default for HttpClient {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a PublicIpInfo.
 pub struct PublicIpInfo {
     pub ip: String,
     pub country: Option<String>,
@@ -186,23 +193,27 @@ pub struct PublicIpInfo {
     pub lon: Option<f64>,
 }
 
+/// Represents a PublicIpDetector.
 pub struct PublicIpDetector {
     http_client: HttpClient,
 }
 
 impl PublicIpDetector {
+    /// Creates a new new.
     pub fn new() -> Result<Self> {
         Ok(Self {
             http_client: HttpClient::new()?,
         })
     }
 
+    /// Configures with proxy.
     pub fn with_proxy(proxy_settings: &ProxySettings) -> Result<Self> {
         Ok(Self {
             http_client: HttpClient::with_proxy(proxy_settings)?,
         })
     }
 
+    /// Performs detect ip operation.
     pub async fn detect_ip(&self) -> Result<PublicIpInfo> {
         // Try multiple IP detection services
         let services: Vec<(&str, fn(&str) -> Result<PublicIpInfo>)> = vec![

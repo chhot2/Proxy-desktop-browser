@@ -23,6 +23,7 @@ pub struct NetworkIntelligence {
 
 /// Configuration for network intelligence
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a NetworkIntelligenceConfig.
 pub struct NetworkIntelligenceConfig {
     /// Enable traffic analysis
     pub traffic_analysis_enabled: bool,
@@ -59,6 +60,7 @@ impl Default for NetworkIntelligenceConfig {
 
 /// Traffic analyzer for understanding network patterns
 #[derive(Debug)]
+/// Represents a TrafficAnalyzer.
 pub struct TrafficAnalyzer {
     request_history: VecDeque<RequestRecord>,
     domain_stats: HashMap<String, DomainStats>,
@@ -71,6 +73,7 @@ pub struct TrafficAnalyzer {
 
 /// Request record for analysis
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a RequestRecord.
 pub struct RequestRecord {
     pub url: String,
     pub domain: String,
@@ -86,6 +89,7 @@ pub struct RequestRecord {
 
 /// Domain-level statistics
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+/// Represents a DomainStats.
 pub struct DomainStats {
     pub domain: String,
     pub request_count: u64,
@@ -98,6 +102,7 @@ pub struct DomainStats {
 
 /// Protocol statistics
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+/// Represents a ProtocolStats.
 pub struct ProtocolStats {
     pub protocol: String,
     pub request_count: u64,
@@ -214,6 +219,7 @@ impl Default for TrafficAnalyzer {
 
 /// Traffic analysis report
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a TrafficReport.
 pub struct TrafficReport {
     pub total_requests: u64,
     pub total_bytes_sent: u64,
@@ -225,6 +231,7 @@ pub struct TrafficReport {
 
 /// Bandwidth manager for traffic shaping
 #[derive(Debug)]
+/// Represents a BandwidthManager.
 pub struct BandwidthManager {
     current_usage_bps: u64,
     max_bandwidth_bps: u64,
@@ -234,6 +241,7 @@ pub struct BandwidthManager {
 
 /// Bandwidth allocation for a component/domain
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a BandwidthAllocation.
 pub struct BandwidthAllocation {
     pub id: String,
     pub allocated_bps: u64,
@@ -243,6 +251,7 @@ pub struct BandwidthAllocation {
 
 /// Bandwidth sample for tracking
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a BandwidthSample.
 pub struct BandwidthSample {
     pub timestamp: u128,
     pub download_bps: u64,
@@ -328,6 +337,7 @@ impl BandwidthManager {
 
 /// Bandwidth report
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a BandwidthReport.
 pub struct BandwidthReport {
     pub current_usage_bps: u64,
     pub max_bandwidth_bps: u64,
@@ -338,6 +348,7 @@ pub struct BandwidthReport {
 
 /// Quality of Service manager
 #[derive(Debug)]
+/// Represents a QosManager.
 pub struct QosManager {
     queues: HashMap<QosPriority, VecDeque<QosRequest>>,
     active_requests: HashMap<String, QosPriority>,
@@ -346,6 +357,7 @@ pub struct QosManager {
 
 /// QoS priority levels
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+/// Enumeration of QosPriority variants.
 pub enum QosPriority {
     Critical,     // User-initiated, blocking
     Interactive,  // User actions, visible
@@ -363,6 +375,7 @@ impl Default for QosPriority {
 
 /// QoS request
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a QosRequest.
 pub struct QosRequest {
     pub id: String,
     pub url: String,
@@ -373,6 +386,7 @@ pub struct QosRequest {
 
 /// QoS statistics
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+/// Represents a QosStats.
 pub struct QosStats {
     pub requests_by_priority: HashMap<QosPriority, u64>,
     pub total_wait_time_ms: u64,
@@ -481,6 +495,7 @@ impl Default for QosManager {
 
 /// QoS report
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a QosReport.
 pub struct QosReport {
     pub pending_by_priority: HashMap<QosPriority, usize>,
     pub active_requests: usize,
@@ -489,6 +504,7 @@ pub struct QosReport {
 
 /// Connection pool manager
 #[derive(Debug)]
+/// Represents a ConnectionPool.
 pub struct ConnectionPool {
     connections: HashMap<String, Vec<ConnectionInfo>>,
     max_per_host: u32,
@@ -498,6 +514,7 @@ pub struct ConnectionPool {
 
 /// Connection information
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a ConnectionInfo.
 pub struct ConnectionInfo {
     pub id: String,
     pub host: String,
@@ -605,6 +622,7 @@ impl ConnectionPool {
 
 /// Connection pool statistics
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a ConnectionPoolStats.
 pub struct ConnectionPoolStats {
     pub total_connections: u32,
     pub active_connections: u32,
@@ -729,6 +747,7 @@ impl NetworkIntelligence {
 
 /// Full network intelligence report
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a NetworkIntelligenceReport.
 pub struct NetworkIntelligenceReport {
     pub traffic: TrafficReport,
     pub bandwidth: BandwidthReport,

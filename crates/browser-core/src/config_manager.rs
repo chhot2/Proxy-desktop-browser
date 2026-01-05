@@ -16,6 +16,7 @@ use tracing::{debug, info, warn};
 
 /// Main application configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a AppConfig.
 pub struct AppConfig {
     /// General application settings
     pub general: GeneralConfig,
@@ -52,6 +53,7 @@ impl Default for AppConfig {
 
 /// General application settings
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a GeneralConfig.
 pub struct GeneralConfig {
     /// Application name
     pub app_name: String,
@@ -82,6 +84,7 @@ impl Default for GeneralConfig {
 
 /// Proxy configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a ProxyConfig.
 pub struct ProxyConfig {
     /// Enable proxy by default
     pub enabled: bool,
@@ -127,6 +130,7 @@ impl Default for ProxyConfig {
 
 /// Privacy configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a PrivacyConfig.
 pub struct PrivacyConfig {
     /// Block trackers
     pub block_trackers: bool,
@@ -166,6 +170,7 @@ impl Default for PrivacyConfig {
 
 /// Performance configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a PerformanceConfig.
 pub struct PerformanceConfig {
     /// Maximum concurrent tabs
     pub max_tabs: u32,
@@ -205,6 +210,7 @@ impl Default for PerformanceConfig {
 
 /// Network configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a NetworkConfig.
 pub struct NetworkConfig {
     /// Connection timeout in milliseconds
     pub connection_timeout_ms: u64,
@@ -247,6 +253,7 @@ impl Default for NetworkConfig {
 
 /// Storage configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a StorageConfig.
 pub struct StorageConfig {
     /// Data directory path
     pub data_dir: Option<String>,
@@ -280,6 +287,7 @@ impl Default for StorageConfig {
 
 /// Logging configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a LoggingConfig.
 pub struct LoggingConfig {
     /// Log level (trace, debug, info, warn, error)
     pub level: String,
@@ -316,6 +324,7 @@ impl Default for LoggingConfig {
 
 /// Feature flags for enabling/disabling features
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a FeatureFlags.
 pub struct FeatureFlags {
     /// Enable experimental features
     pub experimental: bool,
@@ -469,30 +478,37 @@ impl ConfigManager {
         self.config.read().await.general.clone()
     }
 
+    /// Get the proxy configuration section
     pub async fn get_proxy(&self) -> ProxyConfig {
         self.config.read().await.proxy.clone()
     }
 
+    /// Get the privacy configuration section
     pub async fn get_privacy(&self) -> PrivacyConfig {
         self.config.read().await.privacy.clone()
     }
 
+    /// Get the performance configuration section
     pub async fn get_performance(&self) -> PerformanceConfig {
         self.config.read().await.performance.clone()
     }
 
+    /// Get the network configuration section
     pub async fn get_network(&self) -> NetworkConfig {
         self.config.read().await.network.clone()
     }
 
+    /// Get the storage configuration section
     pub async fn get_storage(&self) -> StorageConfig {
         self.config.read().await.storage.clone()
     }
 
+    /// Get the logging configuration section
     pub async fn get_logging(&self) -> LoggingConfig {
         self.config.read().await.logging.clone()
     }
 
+    /// Get the feature flags configuration section
     pub async fn get_features(&self) -> FeatureFlags {
         self.config.read().await.features.clone()
     }

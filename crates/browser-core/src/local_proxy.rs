@@ -130,6 +130,7 @@ pub struct LocalProxyServer {
 
 /// Represents an active proxy connection
 #[derive(Debug, Clone)]
+/// Represents a ProxyConnection.
 pub struct ProxyConnection {
     pub id: String,
     pub client_addr: String,
@@ -539,6 +540,7 @@ pub struct WebSocketProxyHandler {
 }
 
 impl WebSocketProxyHandler {
+    /// Creates a new new.
     pub fn new(upstream_proxy: Option<ProxySettings>) -> Self {
         Self { upstream_proxy }
     }
@@ -677,6 +679,7 @@ impl WebSocketProxyHandler {
 
 /// WebSocket interception result
 #[derive(Debug, Clone)]
+/// Represents a WebSocketInterception.
 pub struct WebSocketInterception {
     pub url: String,
     pub message_count: usize,
@@ -694,6 +697,7 @@ pub struct NetworkInterceptor {
 
 /// An intercepted HTTP request
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+/// Represents a InterceptedRequest.
 pub struct InterceptedRequest {
     pub id: String,
     pub method: String,
@@ -709,6 +713,7 @@ pub struct InterceptedRequest {
 
 /// A rule for modifying requests
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+/// Represents a ModificationRule.
 pub struct ModificationRule {
     pub id: String,
     pub name: String,
@@ -719,6 +724,7 @@ pub struct ModificationRule {
 
 /// Modifications to apply to a request
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+/// Represents a RequestModifications.
 pub struct RequestModifications {
     pub add_headers: HashMap<String, String>,
     pub remove_headers: Vec<String>,
@@ -727,6 +733,7 @@ pub struct RequestModifications {
 }
 
 impl NetworkInterceptor {
+    /// Creates a new new.
     pub fn new() -> Self {
         Self {
             intercepted_requests: Arc::new(RwLock::new(Vec::new())),

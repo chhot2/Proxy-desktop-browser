@@ -1,3 +1,13 @@
+//! Webview Manager Module for Browser Core
+//!
+//! Provides comprehensive webview tab management including:
+//! - Tab lifecycle management (create, close, focus)
+//! - Navigation control (navigate, back, forward, reload, stop)
+//! - Proxy integration with per-tab proxy settings
+//! - Proxy rotation and session management
+//! - PAC (Proxy Auto-Config) server integration
+//! - Free proxy provider management
+
 use anyhow::{anyhow, Result};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -14,6 +24,7 @@ use crate::free_ip_providers::FreeIpProviderManager;
 use crate::proxy_rotation::{ProxyRotationManager, ProxyRotationStrategy, ProxySessionStats};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a WebviewTab.
 pub struct WebviewTab {
     pub tab_id: String,
     pub window_label: String,
@@ -29,6 +40,7 @@ pub struct WebviewTab {
     pub zoom_level: f64,
 }
 
+/// Represents a WebviewManager.
 pub struct WebviewManager {
     app_handle: AppHandle,
     tabs: RwLock<HashMap<String, WebviewTab>>,
@@ -41,6 +53,13 @@ pub struct WebviewManager {
 }
 
 impl WebviewManager {
+    /// Create a new WebviewManager instance
+    ///
+    /// Initializes all proxy infrastructure including local proxy manager,
+    /// PAC server, proxy provider manager, and rotation manager.
+    ///
+    /// # Arguments
+    /// * `app_handle` - The Tauri application handle
     pub fn new(app_handle: AppHandle) -> Self {
         // Initialize local proxy manager with port range 9000-9999
         let local_proxy_manager = Arc::new(LocalProxyManager::new(9000..10000));
@@ -76,6 +95,10 @@ impl WebviewManager {
     }
 
     /// Start the proxy infrastructure
+    /// Start the proxy infrastructure including PAC server
+    ///
+    /// This should be called during application initialization to enable
+    /// proxy functionality for all tabs.
     pub async fn start_proxy_infrastructure(&self) -> Result<()> {
         // Start PAC server
         self.pac_manager.start().await?;
@@ -94,6 +117,11 @@ impl WebviewManager {
     }
 
     /// Get a proxy for a tab with rotation
+    /// Get the proxy assigned to a specific tab
+    ///
+    /// # Arguments
+    /// * `tab_id` - The ID of the tab
+    /// * `domain` - Optional domain for domain-specific proxy selection
     pub async fn get_proxy_for_tab(&self, tab_id: &str, domain: Option<&str>) -> Result<Option<FreeProxy>> {
         let rotation_manager = self.proxy_rotation_manager.read().await;
         match rotation_manager.get_proxy_for_tab(tab_id, domain).await {
@@ -103,6 +131,10 @@ impl WebviewManager {
     }
 
     /// Force rotate proxy for a tab
+    /// Rotate to a new proxy for a specific tab
+    ///
+    /// # Arguments
+    /// * `tab_id` - The ID of the tab to rotate proxy for
     pub async fn rotate_proxy_for_tab(&self, tab_id: &str) -> Result<Option<FreeProxy>> {
         let rotation_manager = self.proxy_rotation_manager.read().await;
         match rotation_manager.force_rotate(tab_id).await {
@@ -112,12 +144,20 @@ impl WebviewManager {
     }
 
     /// Get proxy session statistics
+    /// Get proxy session statistics for a tab
+    ///
+    /// # Arguments
+    /// * `tab_id` - The ID of the tab
     pub async fn get_proxy_session_stats(&self, tab_id: &str) -> Result<Option<ProxySessionStats>> {
         let rotation_manager = self.proxy_rotation_manager.read().await;
         Ok(rotation_manager.get_session_stats(tab_id).await)
     }
 
     /// Update proxy rotation strategy
+    /// Update the proxy rotation strategy
+    ///
+    /// # Arguments
+    /// * `strategy` - The new rotation strategy to use
     pub async fn update_rotation_strategy(&self, strategy: ProxyRotationStrategy) -> Result<()> {
         let mut rotation_manager = self.proxy_rotation_manager.write().await;
         rotation_manager.update_strategy(strategy).await;
@@ -125,6 +165,12 @@ impl WebviewManager {
     }
 
     /// Record proxy performance
+    /// Record proxy performance metrics
+    ///
+    /// # Arguments
+    /// * `proxy_id` - The ID of the proxy
+    /// * `success` - Whether the request was successful
+    /// * `response_time_ms` - Optional response time in milliseconds
     pub async fn record_proxy_performance(&self, proxy_id: &str, success: bool, response_time_ms: Option<f64>) -> Result<()> {
         let rotation_manager = self.proxy_rotation_manager.read().await;
         rotation_manager.record_performance(proxy_id, success, response_time_ms).await;
@@ -132,6 +178,10 @@ impl WebviewManager {
     }
 
     /// Create a new webview tab with native window
+    /// Create a new tab without proxy settings
+    ///
+    /// # Arguments
+    /// * `initial_url` - Optional initial URL to navigate to
     pub async fn create_tab(&self, initial_url: Option<String>) -> Result<WebviewTab> {
         self.create_tab_with_proxy(initial_url, None).await
     }
@@ -370,6 +420,10 @@ impl WebviewManager {
     }
 
     /// Go back in navigation history
+    /// Navigate back in tab history
+    ///
+    /// # Arguments
+    /// * `tab_id` - The ID of the tab
     pub async fn go_back(&self, tab_id: &str) -> Result<()> {
         let tabs = self.tabs.read().await;
         let tab = tabs.get(tab_id).ok_or_else(|| anyhow!("Tab not found"))?;
@@ -382,6 +436,10 @@ impl WebviewManager {
     }
 
     /// Go forward in navigation history
+    /// Navigate forward in tab history
+    ///
+    /// # Arguments
+    /// * `tab_id` - The ID of the tab
     pub async fn go_forward(&self, tab_id: &str) -> Result<()> {
         let tabs = self.tabs.read().await;
         let tab = tabs.get(tab_id).ok_or_else(|| anyhow!("Tab not found"))?;
@@ -394,6 +452,10 @@ impl WebviewManager {
     }
 
     /// Reload the current page
+    /// Reload the current page in a tab
+    ///
+    /// # Arguments
+    /// * `tab_id` - The ID of the tab
     pub async fn reload(&self, tab_id: &str) -> Result<()> {
         let tabs = self.tabs.read().await;
         let tab = tabs.get(tab_id).ok_or_else(|| anyhow!("Tab not found"))?;
@@ -406,6 +468,10 @@ impl WebviewManager {
     }
 
     /// Stop loading the current page
+    /// Stop loading in a tab
+    ///
+    /// # Arguments
+    /// * `tab_id` - The ID of the tab
     pub async fn stop(&self, tab_id: &str) -> Result<()> {
         let tabs = self.tabs.read().await;
         let tab = tabs.get(tab_id).ok_or_else(|| anyhow!("Tab not found"))?;
@@ -425,6 +491,11 @@ impl WebviewManager {
     }
 
     /// Set zoom level for a tab
+    /// Set the zoom level for a tab
+    ///
+    /// # Arguments
+    /// * `tab_id` - The ID of the tab
+    /// * `level` - The zoom level (1.0 = 100%)
     pub async fn set_zoom(&self, tab_id: &str, level: f64) -> Result<()> {
         if level < 0.25 || level > 5.0 {
             return Err(anyhow!("Zoom level must be between 0.25 and 5.0"));
@@ -448,11 +519,17 @@ impl WebviewManager {
     }
 
     /// Get the currently active tab
+    /// Get the ID of the currently active tab
     pub async fn get_active_tab_id(&self) -> Option<String> {
         self.active_tab.read().await.clone()
     }
 
     /// Execute JavaScript in a tab
+    /// Execute JavaScript in a tab
+    ///
+    /// # Arguments
+    /// * `tab_id` - The ID of the tab
+    /// * `script` - The JavaScript code to execute
     pub async fn execute_script(&self, tab_id: &str, script: &str) -> Result<()> {
         let tabs = self.tabs.read().await;
         let tab = tabs.get(tab_id).ok_or_else(|| anyhow!("Tab not found"))?;
@@ -465,6 +542,14 @@ impl WebviewManager {
     }
 
     /// Update tab navigation state (public method for Tauri commands)
+    /// Update the navigation state for a tab
+    ///
+    /// # Arguments
+    /// * `tab_id` - The ID of the tab
+    /// * `url` - The current URL
+    /// * `title` - The page title
+    /// * `can_go_back` - Whether back navigation is possible
+    /// * `can_go_forward` - Whether forward navigation is possible
     pub async fn update_navigation_state(
         &self,
         tab_id: &str,
@@ -496,12 +581,14 @@ impl WebviewManager {
 
 // Tauri command handlers
 #[tauri::command]
+/// Creates a new webview tab.
 pub async fn create_webview_tab(app_handle: tauri::AppHandle, url: Option<String>) -> Result<WebviewTab, String> {
     let manager = app_handle.state::<WebviewManager>();
     manager.create_tab(url).await.map_err(|e| e.to_string())
 }
 
 #[tauri::command]
+/// Creates a new tab with proxy.
 pub async fn create_tab_with_proxy(
     app_handle: tauri::AppHandle,
     url: Option<String>,
@@ -512,6 +599,7 @@ pub async fn create_tab_with_proxy(
 }
 
 #[tauri::command]
+/// Starts the proxy infrastructure.
 pub async fn start_proxy_infrastructure(
     app_handle: tauri::AppHandle,
 ) -> Result<(), String> {
@@ -520,6 +608,7 @@ pub async fn start_proxy_infrastructure(
 }
 
 #[tauri::command]
+/// Gets the proxy status.
 pub async fn get_proxy_status(
     app_handle: tauri::AppHandle,
 ) -> Result<HashMap<String, String>, String> {
@@ -535,6 +624,7 @@ pub async fn get_proxy_status(
 }
 
 #[tauri::command]
+/// Gets the tab proxy info.
 pub async fn get_tab_proxy_info(
     app_handle: tauri::AppHandle,
     tab_id: String,
@@ -544,6 +634,7 @@ pub async fn get_tab_proxy_info(
 }
 
 #[tauri::command]
+/// Fetches proxies from provider.
 pub async fn fetch_proxies_from_provider(
     _app_handle: tauri::AppHandle,
     provider_name: String,
@@ -568,6 +659,7 @@ pub async fn fetch_proxies_from_provider(
 }
 
 #[tauri::command]
+/// Tests proxy.
 pub async fn test_proxy(
     _app_handle: tauri::AppHandle,
     proxy: FreeProxy,
@@ -581,6 +673,7 @@ pub async fn test_proxy(
 }
 
 #[tauri::command]
+/// Rotates proxy for tab.
 pub async fn rotate_proxy_for_tab(
     app_handle: tauri::AppHandle,
     tab_id: String,
@@ -591,6 +684,7 @@ pub async fn rotate_proxy_for_tab(
 }
 
 #[tauri::command]
+/// Gets the proxy session stats.
 pub async fn get_proxy_session_stats(
     app_handle: tauri::AppHandle,
     tab_id: String,
@@ -601,6 +695,7 @@ pub async fn get_proxy_session_stats(
 }
 
 #[tauri::command]
+/// Updates the rotation strategy.
 pub async fn update_rotation_strategy(
     app_handle: tauri::AppHandle,
     strategy: String,
@@ -658,30 +753,35 @@ pub async fn update_rotation_strategy(
 }
 
 #[tauri::command]
+/// Performs navigate webview tab operation.
 pub async fn navigate_webview_tab(app_handle: tauri::AppHandle, tab_id: String, url: String) -> Result<(), String> {
     let manager = app_handle.state::<WebviewManager>();
     manager.navigate(&tab_id, &url).await.map_err(|e| e.to_string())
 }
 
 #[tauri::command]
+/// Closes webview tab.
 pub async fn close_webview_tab(app_handle: tauri::AppHandle, tab_id: String) -> Result<(), String> {
     let manager = app_handle.state::<WebviewManager>();
     manager.close_tab(&tab_id).await.map_err(|e| e.to_string())
 }
 
 #[tauri::command]
+/// Performs focus webview tab operation.
 pub async fn focus_webview_tab(app_handle: tauri::AppHandle, tab_id: String) -> Result<(), String> {
     let manager = app_handle.state::<WebviewManager>();
     manager.focus_tab(&tab_id).await.map_err(|e| e.to_string())
 }
 
 #[tauri::command]
+/// Gets the webview tabs.
 pub async fn get_webview_tabs(app_handle: tauri::AppHandle) -> Result<Vec<WebviewTab>, String> {
     let manager = app_handle.state::<WebviewManager>();
     Ok(manager.list_tabs().await)
 }
 
 #[tauri::command]
+/// Performs navigation changed operation.
 pub async fn navigation_changed(
     app_handle: tauri::AppHandle,
     tab_id: String,
@@ -695,6 +795,7 @@ pub async fn navigation_changed(
 }
 
 #[tauri::command]
+/// Performs title changed operation.
 pub async fn title_changed(
     app_handle: tauri::AppHandle,
     tab_id: String,
@@ -705,42 +806,49 @@ pub async fn title_changed(
 }
 
 #[tauri::command]
+/// Performs go back tab operation.
 pub async fn go_back_tab(app_handle: tauri::AppHandle, tab_id: String) -> Result<(), String> {
     let manager = app_handle.state::<WebviewManager>();
     manager.go_back(&tab_id).await.map_err(|e| e.to_string())
 }
 
 #[tauri::command]
+/// Performs go forward tab operation.
 pub async fn go_forward_tab(app_handle: tauri::AppHandle, tab_id: String) -> Result<(), String> {
     let manager = app_handle.state::<WebviewManager>();
     manager.go_forward(&tab_id).await.map_err(|e| e.to_string())
 }
 
 #[tauri::command]
+/// Reloads tab.
 pub async fn reload_tab(app_handle: tauri::AppHandle, tab_id: String) -> Result<(), String> {
     let manager = app_handle.state::<WebviewManager>();
     manager.reload(&tab_id).await.map_err(|e| e.to_string())
 }
 
 #[tauri::command]
+/// Stops the tab.
 pub async fn stop_tab(app_handle: tauri::AppHandle, tab_id: String) -> Result<(), String> {
     let manager = app_handle.state::<WebviewManager>();
     manager.stop(&tab_id).await.map_err(|e| e.to_string())
 }
 
 #[tauri::command]
+/// Sets the tab zoom.
 pub async fn set_tab_zoom(app_handle: tauri::AppHandle, tab_id: String, level: f64) -> Result<(), String> {
     let manager = app_handle.state::<WebviewManager>();
     manager.set_zoom(&tab_id, level).await.map_err(|e| e.to_string())
 }
 
 #[tauri::command]
+/// Gets the active tab.
 pub async fn get_active_tab(app_handle: tauri::AppHandle) -> Result<Option<String>, String> {
     let manager = app_handle.state::<WebviewManager>();
     Ok(manager.get_active_tab_id().await)
 }
 
 #[tauri::command]
+/// Executes script in tab.
 pub async fn execute_script_in_tab(app_handle: tauri::AppHandle, tab_id: String, script: String) -> Result<(), String> {
     let manager = app_handle.state::<WebviewManager>();
     manager.execute_script(&tab_id, &script).await.map_err(|e| e.to_string())

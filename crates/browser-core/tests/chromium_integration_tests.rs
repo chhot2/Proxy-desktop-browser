@@ -56,7 +56,7 @@ async fn test_browser_custom_viewport() {
     assert_eq!(engine.get_config().viewport_width, 1920);
     assert_eq!(engine.get_config().viewport_height, 1080);
     
-    shutdown_browser(engine).await.unwrap();
+    shutdown_browser(engine).await.expect("Operation should succeed");
 }
 
 /// Test creating a tab and navigating to a URL
@@ -88,7 +88,7 @@ async fn test_create_tab_and_navigate() {
     // Wait for navigation
     sleep(Duration::from_secs(2)).await;
     
-    shutdown_browser(engine).await.unwrap();
+    shutdown_browser(engine).await.expect("Operation should succeed");
 }
 
 /// Test multiple tabs
@@ -121,7 +121,7 @@ async fn test_multiple_tabs() {
     // Verify tab IDs are different
     assert_ne!(tab1.id, tab2.id);
     
-    shutdown_browser(engine).await.unwrap();
+    shutdown_browser(engine).await.expect("Operation should succeed");
 }
 
 /// Test setting active tab
@@ -149,16 +149,16 @@ async fn test_set_active_tab() {
     // Active tab should be tab2 (last created)
     let active = engine.get_active_tab().await;
     assert!(active.is_some());
-    assert_eq!(active.unwrap().id, tab2.id);
+    assert_eq!(active.expect("Operation should succeed").id, tab2.id);
     
     // Set active tab to tab1
     engine.set_active_tab(&tab1.id).await.expect("Failed to set active tab");
     
     let active = engine.get_active_tab().await;
     assert!(active.is_some());
-    assert_eq!(active.unwrap().id, tab1.id);
+    assert_eq!(active.expect("Operation should succeed").id, tab1.id);
     
-    shutdown_browser(engine).await.unwrap();
+    shutdown_browser(engine).await.expect("Operation should succeed");
 }
 
 /// Test closing a tab
@@ -192,7 +192,7 @@ async fn test_close_tab() {
     // Verify we have 1 tab
     assert_eq!(engine.get_tabs().await.len(), 1);
     
-    shutdown_browser(engine).await.unwrap();
+    shutdown_browser(engine).await.expect("Operation should succeed");
 }
 
 /// Test browser with custom user agent
@@ -210,11 +210,11 @@ async fn test_custom_user_agent() {
     
     assert!(engine.get_config().user_agent.is_some());
     assert_eq!(
-        engine.get_config().user_agent.as_ref().unwrap(),
+        engine.get_config().user_agent.as_ref().expect("As ref should succeed"),
         "TestBot/1.0 (Integration Test)"
     );
     
-    shutdown_browser(engine).await.unwrap();
+    shutdown_browser(engine).await.expect("Operation should succeed");
 }
 
 /// Test browser with stealth mode enabled
@@ -239,7 +239,7 @@ async fn test_stealth_mode() {
     
     sleep(Duration::from_millis(500)).await;
     
-    shutdown_browser(engine).await.unwrap();
+    shutdown_browser(engine).await.expect("Operation should succeed");
 }
 
 /// Test browser with WebRTC protection
@@ -257,7 +257,7 @@ async fn test_webrtc_protection() {
     
     assert!(engine.get_config().webrtc_protection);
     
-    shutdown_browser(engine).await.unwrap();
+    shutdown_browser(engine).await.expect("Operation should succeed");
 }
 
 /// Test browser with DNS over HTTPS
@@ -275,7 +275,7 @@ async fn test_dns_over_https() {
     
     assert!(engine.get_config().doh_server.is_some());
     
-    shutdown_browser(engine).await.unwrap();
+    shutdown_browser(engine).await.expect("Operation should succeed");
 }
 
 /// Test launching browser without sandbox
@@ -293,7 +293,7 @@ async fn test_no_sandbox() {
     
     assert!(!engine.get_config().sandbox);
     
-    shutdown_browser(engine).await.unwrap();
+    shutdown_browser(engine).await.expect("Operation should succeed");
 }
 
 /// Test double shutdown (should be idempotent)
@@ -353,9 +353,9 @@ async fn test_tab_proxy_metadata() {
     let tabs = engine.get_tabs().await;
     let updated_tab = tabs.iter().find(|t| t.id == tab.id);
     assert!(updated_tab.is_some());
-    assert!(updated_tab.unwrap().proxy.is_some());
+    assert!(updated_tab.expect("Operation should succeed").proxy.is_some());
     
-    shutdown_browser(engine).await.unwrap();
+    shutdown_browser(engine).await.expect("Operation should succeed");
 }
 
 /// Test getting tabs when engine is running
@@ -382,7 +382,7 @@ async fn test_get_tabs_while_running() {
     let tabs = engine.get_tabs().await;
     assert_eq!(tabs.len(), 1);
     
-    shutdown_browser(engine).await.unwrap();
+    shutdown_browser(engine).await.expect("Operation should succeed");
 }
 
 /// Test concurrent tab creation
@@ -414,7 +414,7 @@ async fn test_concurrent_tab_creation() {
     for handle in handles {
         let result = handle.await;
         assert!(result.is_ok());
-        assert!(result.unwrap().is_ok());
+        assert!(result.expect("Operation should succeed").is_ok());
     }
     
     // Should have 3 tabs
@@ -424,7 +424,7 @@ async fn test_concurrent_tab_creation() {
     // Need to move out of Arc to shutdown
     match std::sync::Arc::try_unwrap(engine) {
         Ok(engine) => {
-            shutdown_browser(engine).await.unwrap();
+            shutdown_browser(engine).await.expect("Operation should succeed");
         }
         Err(_) => {
             eprintln!("Warning: Could not unwrap Arc for shutdown (other references still exist)");
@@ -447,7 +447,7 @@ async fn test_launch_timeout() {
     // Otherwise it will timeout (which is also a valid test outcome)
     match result {
         Ok(engine) => {
-            shutdown_browser(engine).await.unwrap();
+            shutdown_browser(engine).await.expect("Operation should succeed");
         }
         Err(e) => {
             // Timeout is acceptable

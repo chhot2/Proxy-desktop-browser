@@ -127,7 +127,7 @@ async fn test_error_recovery_retry_success() {
     ).await;
     
     assert!(result.is_ok());
-    assert_eq!(result.unwrap(), "Success!");
+    assert_eq!(result.expect("Result operation failed"), "Success!");
     assert_eq!(counter.load(std::sync::atomic::Ordering::SeqCst), 3);
 }
 
@@ -184,7 +184,7 @@ async fn test_performance_timing() {
     manager.record_operation("db_query", Duration::from_millis(100), true).await;
     manager.record_operation("db_query", Duration::from_millis(150), true).await;
     
-    let metrics = manager.get_operation_metrics("db_query").await.unwrap();
+    let metrics = manager.get_operation_metrics("db_query").await.expect("Failed to get value");
     assert_eq!(metrics.total_calls, 3);
     assert_eq!(metrics.min_duration_ms, 50);
     assert_eq!(metrics.max_duration_ms, 150);

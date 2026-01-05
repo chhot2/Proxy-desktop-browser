@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::time::SystemTime;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Enumeration of TabStatus variants.
 pub enum TabStatus {
     Creating,
     Active,
@@ -9,6 +10,7 @@ pub enum TabStatus {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a NetworkConfig.
 pub struct NetworkConfig {
     pub proxy_url: Option<String>,
     pub dns_servers: Vec<String>,
@@ -18,6 +20,7 @@ pub struct NetworkConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a TLSProfile.
 pub struct TLSProfile {
     pub version: String,
     pub cipher_suites: Vec<String>,
@@ -26,6 +29,7 @@ pub struct TLSProfile {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a HTTP2Settings.
 pub struct HTTP2Settings {
     pub settings_frame: Vec<(u32, u32)>,
     pub window_update: u32,
@@ -33,6 +37,7 @@ pub struct HTTP2Settings {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a TCPFingerprint.
 pub struct TCPFingerprint {
     pub ttl: u8,
     pub window_size: u32,
@@ -40,6 +45,7 @@ pub struct TCPFingerprint {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a TabProfile.
 pub struct TabProfile {
     pub tab_id: String,
     pub virtual_ip: virtual_ip::VirtualIP,
@@ -58,6 +64,7 @@ mod serde_systemtime {
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
     use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
+    /// Performs serialize operation.
     pub fn serialize<S>(time: &SystemTime, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -66,6 +73,7 @@ mod serde_systemtime {
         duration.as_secs().serialize(serializer)
     }
 
+    /// Performs deserialize operation.
     pub fn deserialize<'de, D>(deserializer: D) -> Result<SystemTime, D::Error>
     where
         D: Deserializer<'de>,

@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a BrowserFingerprint.
 pub struct BrowserFingerprint {
     pub user_agent: String,
     pub accept_language: String,

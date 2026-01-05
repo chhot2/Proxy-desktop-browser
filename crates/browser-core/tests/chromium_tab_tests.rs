@@ -50,7 +50,7 @@ fn test_chromium_tab_with_proxy() {
     };
     
     assert!(tab.proxy.is_some());
-    let tab_proxy = tab.proxy.unwrap();
+    let tab_proxy = tab.proxy.expect("Proxy operation failed");
     assert_eq!(tab_proxy.host, Some("proxy.example.com".to_string()));
     assert_eq!(tab_proxy.port, Some(8080));
 }
@@ -270,11 +270,11 @@ async fn test_multiple_tabs_with_different_proxies() {
     
     // Verify each tab has correct proxy
     assert!(tab1.proxy.is_some());
-    assert_eq!(tab1.proxy.as_ref().unwrap().host, Some("proxy1.example.com".to_string()));
+    assert_eq!(tab1.proxy.as_ref().expect("As Ref operation failed").host, Some("proxy1.example.com".to_string()));
     
     assert!(tab2.proxy.is_some());
-    assert_eq!(tab2.proxy.as_ref().unwrap().host, Some("proxy2.example.com".to_string()));
-    assert_eq!(tab2.proxy.as_ref().unwrap().port, Some(1080));
+    assert_eq!(tab2.proxy.as_ref().expect("As Ref operation failed").host, Some("proxy2.example.com".to_string()));
+    assert_eq!(tab2.proxy.as_ref().expect("As Ref operation failed").port, Some(1080));
     
     assert!(tab3.proxy.is_none());
 }

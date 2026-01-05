@@ -241,7 +241,7 @@ fn test_provider_manager_default() {
 #[test]
 fn test_provider_manager_with_update_interval() {
     let manager = FreeIpProviderManager::new()
-        .unwrap()
+        .expect("Operation should succeed")
         .with_update_interval(Duration::from_secs(600));
     
     // Manager should be configured (we can't directly check interval, but creation should succeed)
@@ -250,21 +250,21 @@ fn test_provider_manager_with_update_interval() {
 
 #[test]
 fn test_provider_manager_get_working_proxies_empty() {
-    let manager = FreeIpProviderManager::new().unwrap();
+    let manager = FreeIpProviderManager::new().expect("Operation should succeed");
     let working = manager.get_working_proxies();
     assert!(working.is_empty());
 }
 
 #[test]
 fn test_provider_manager_get_random_working_proxy_empty() {
-    let manager = FreeIpProviderManager::new().unwrap();
+    let manager = FreeIpProviderManager::new().expect("Operation should succeed");
     let proxy = manager.get_random_working_proxy();
     assert!(proxy.is_none());
 }
 
 #[test]
 fn test_provider_manager_needs_update_initially() {
-    let manager = FreeIpProviderManager::new().unwrap();
+    let manager = FreeIpProviderManager::new().expect("Operation should succeed");
     // A fresh manager should need an update
     assert!(manager.needs_update());
 }
@@ -450,7 +450,7 @@ mod async_tests {
 
     #[tokio::test]
     async fn test_provider_manager_fetch_from_provider() {
-        let mut manager = FreeIpProviderManager::new().unwrap();
+        let mut manager = FreeIpProviderManager::new().expect("Operation should succeed");
         
         // Test fetching from a single provider (may fail due to network, but shouldn't panic)
         let provider = FreeIpProvider::ProxyScrape;
@@ -473,7 +473,7 @@ mod async_tests {
 
     #[tokio::test]
     async fn test_provider_manager_update_proxy_pool() {
-        let mut manager = FreeIpProviderManager::new().unwrap();
+        let mut manager = FreeIpProviderManager::new().expect("Operation should succeed");
         
         // Update pool should not panic even if providers fail
         let result = manager.update_proxy_pool().await;
@@ -490,7 +490,7 @@ mod async_tests {
 
     #[tokio::test]
     async fn test_provider_manager_fetch_all() {
-        let mut manager = FreeIpProviderManager::new().unwrap();
+        let mut manager = FreeIpProviderManager::new().expect("Operation should succeed");
         
         // Fetch all should return proxies from multiple providers
         let proxies = manager.fetch_all().await;

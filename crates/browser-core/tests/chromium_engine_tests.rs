@@ -137,7 +137,7 @@ async fn test_engine_with_proxy() {
     let retrieved_config = engine.get_config();
     
     assert!(retrieved_config.proxy.is_some());
-    let retrieved_proxy = retrieved_config.proxy.as_ref().unwrap();
+    let retrieved_proxy = retrieved_config.proxy.as_ref().expect("Configuration error");
     assert_eq!(retrieved_proxy.host, Some("proxy.example.com".to_string()));
     assert_eq!(retrieved_proxy.port, Some(8080));
 }
@@ -369,7 +369,7 @@ async fn test_engine_with_geolocation() {
     let retrieved = engine.get_config();
     
     assert!(retrieved.geolocation.is_some());
-    let geo = retrieved.geolocation.as_ref().unwrap();
+    let geo = retrieved.geolocation.as_ref().expect("As Ref operation failed");
     assert_eq!(geo.latitude, 37.7749);
     assert_eq!(geo.longitude, -122.4194);
 }
@@ -463,7 +463,7 @@ async fn test_engine_with_proxy_auth() {
     let retrieved = engine.get_config();
     
     assert!(retrieved.proxy_auth.is_some());
-    let auth = retrieved.proxy_auth.as_ref().unwrap();
+    let auth = retrieved.proxy_auth.as_ref().expect("As Ref operation failed");
     assert_eq!(auth.username, "testuser");
     assert_eq!(auth.password, "testpass");
 }
@@ -532,7 +532,7 @@ async fn test_engine_concurrent_operations() {
     // All should succeed
     while let Some(result) = set.join_next().await {
         assert!(result.is_ok());
-        assert!(!result.unwrap());
+        assert!(!result.expect("Result operation failed"));
     }
 }
 
@@ -554,7 +554,7 @@ async fn test_engine_get_tabs_concurrent() {
     }
     
     while let Some(result) = set.join_next().await {
-        let tabs = result.unwrap();
+        let tabs = result.expect("Result operation failed");
         assert_eq!(tabs.len(), 0);
     }
 }

@@ -7,6 +7,7 @@ use tokio::sync::RwLock;
 use tracing::{info, warn};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a Cookie.
 pub struct Cookie {
     pub domain: String,
     pub name: String,
@@ -19,6 +20,7 @@ pub struct Cookie {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a HistoryEntry.
 pub struct HistoryEntry {
     pub id: i64,
     pub url: String,
@@ -28,6 +30,7 @@ pub struct HistoryEntry {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a Bookmark.
 pub struct Bookmark {
     pub id: i64,
     pub url: String,
@@ -38,6 +41,7 @@ pub struct Bookmark {
 
 /// Export data structure containing all storage data
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a StorageExport.
 pub struct StorageExport {
     pub version: String,
     pub exported_at: i64,
@@ -49,6 +53,7 @@ pub struct StorageExport {
 
 /// Import options for controlling what data to import
 #[derive(Debug, Clone, Default)]
+/// Represents a ImportOptions.
 pub struct ImportOptions {
     /// Whether to merge with existing data or replace it
     pub merge: bool,
@@ -88,6 +93,7 @@ impl ImportOptions {
 
 /// Export options for controlling what data to export
 #[derive(Debug, Clone, Default)]
+/// Represents a ExportOptions.
 pub struct ExportOptions {
     /// Export cookies
     pub export_cookies: bool,
@@ -113,6 +119,7 @@ impl ExportOptions {
 
 /// Import/Export statistics
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+/// Represents a ImportExportStats.
 pub struct ImportExportStats {
     pub cookies_count: usize,
     pub history_count: usize,
@@ -133,6 +140,7 @@ pub struct StorageEngine {
 }
 
 impl StorageEngine {
+    /// Creates a new new.
     pub fn new(data_dir: &Path) -> Result<Self> {
         std::fs::create_dir_all(data_dir)?;
         
@@ -543,12 +551,14 @@ impl StorageEngine {
     // COOKIE OPERATIONS
     // =========================================================================
 
+    /// Sets the cookie.
     pub async fn set_cookie(&self, cookie: Cookie) -> Result<()> {
         let key = format!("{}|{}|{}", cookie.domain, cookie.name, cookie.path);
         self.cookies.write().await.insert(key, cookie);
         Ok(())
     }
 
+    /// Gets the cookies.
     pub async fn get_cookies(&self, domain: &str) -> Result<Vec<Cookie>> {
         let cookies = self.cookies.read().await;
         let result: Vec<Cookie> = cookies
@@ -559,17 +569,20 @@ impl StorageEngine {
         Ok(result)
     }
 
+    /// Gets the all cookies.
     pub async fn get_all_cookies(&self) -> Result<Vec<Cookie>> {
         let cookies = self.cookies.read().await;
         Ok(cookies.values().cloned().collect())
     }
 
+    /// Removes the cookie.
     pub async fn delete_cookie(&self, domain: &str, name: &str, path: &str) -> Result<()> {
         let key = format!("{}|{}|{}", domain, name, path);
         self.cookies.write().await.remove(&key);
         Ok(())
     }
 
+    /// Clears cookies.
     pub async fn clear_cookies(&self) -> Result<()> {
         self.cookies.write().await.clear();
         Ok(())
@@ -579,6 +592,7 @@ impl StorageEngine {
     // HISTORY OPERATIONS
     // =========================================================================
 
+    /// Adds a history.
     pub async fn add_history(&self, url: &str, title: Option<&str>) -> Result<()> {
         let now = chrono::Utc::now().timestamp();
         let mut history = self.history.write().await;
@@ -605,6 +619,7 @@ impl StorageEngine {
         Ok(())
     }
 
+    /// Gets the history.
     pub async fn get_history(&self, limit: i64) -> Result<Vec<HistoryEntry>> {
         let history = self.history.read().await;
         let mut entries: Vec<HistoryEntry> = history.values().cloned().collect();
@@ -613,6 +628,7 @@ impl StorageEngine {
         Ok(entries)
     }
 
+    /// Performs search history operation.
     pub async fn search_history(&self, query: &str) -> Result<Vec<HistoryEntry>> {
         let history = self.history.read().await;
         let query_lower = query.to_lowercase();
@@ -632,6 +648,7 @@ impl StorageEngine {
         Ok(entries)
     }
 
+    /// Clears history.
     pub async fn clear_history(&self) -> Result<()> {
         self.history.write().await.clear();
         Ok(())
@@ -641,6 +658,7 @@ impl StorageEngine {
     // BOOKMARK OPERATIONS
     // =========================================================================
 
+    /// Adds a bookmark.
     pub async fn add_bookmark(&self, url: &str, title: &str, folder: Option<&str>) -> Result<i64> {
         let now = chrono::Utc::now().timestamp();
         let mut id_guard = self.next_bookmark_id.write().await;
@@ -659,6 +677,7 @@ impl StorageEngine {
         Ok(id)
     }
 
+    /// Gets the bookmarks.
     pub async fn get_bookmarks(&self) -> Result<Vec<Bookmark>> {
         let bookmarks = self.bookmarks.read().await;
         let mut entries: Vec<Bookmark> = bookmarks.values().cloned().collect();
@@ -666,6 +685,7 @@ impl StorageEngine {
         Ok(entries)
     }
 
+    /// Removes the bookmark.
     pub async fn delete_bookmark(&self, id: i64) -> Result<()> {
         self.bookmarks.write().await.remove(&id);
         Ok(())
@@ -675,6 +695,7 @@ impl StorageEngine {
     // LOCAL STORAGE OPERATIONS
     // =========================================================================
 
+    /// Sets the local storage.
     pub async fn set_local_storage(&self, origin: &str, key: &str, value: &str) -> Result<()> {
         let mut storage = self.local_storage.write().await;
         storage
@@ -684,6 +705,7 @@ impl StorageEngine {
         Ok(())
     }
 
+    /// Gets the local storage.
     pub async fn get_local_storage(&self, origin: &str, key: &str) -> Result<Option<String>> {
         let storage = self.local_storage.read().await;
         Ok(storage
@@ -692,6 +714,7 @@ impl StorageEngine {
             .cloned())
     }
 
+    /// Gets the all local storage.
     pub async fn get_all_local_storage(&self, origin: &str) -> Result<Vec<(String, String)>> {
         let storage = self.local_storage.read().await;
         Ok(storage
@@ -700,11 +723,13 @@ impl StorageEngine {
             .unwrap_or_default())
     }
 
+    /// Clears local storage.
     pub async fn clear_local_storage(&self, origin: &str) -> Result<()> {
         self.local_storage.write().await.remove(origin);
         Ok(())
     }
 
+    /// Clears all local storage.
     pub async fn clear_all_local_storage(&self) -> Result<()> {
         self.local_storage.write().await.clear();
         Ok(())
@@ -714,6 +739,7 @@ impl StorageEngine {
     // UTILITY FUNCTIONS
     // =========================================================================
 
+    /// Performs db path operation.
     pub fn db_path(&self) -> &Path {
         &self.data_dir
     }
@@ -872,6 +898,7 @@ mod tests {
 
 /// Browser session data for persistence
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a BrowserSession.
 pub struct BrowserSession {
     /// Unique session ID
     pub session_id: String,
@@ -895,6 +922,7 @@ pub struct BrowserSession {
 
 /// Tab information for session persistence
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a SessionTab.
 pub struct SessionTab {
     /// Tab ID
     pub tab_id: String,
@@ -920,6 +948,7 @@ pub struct SessionTab {
 
 /// Scroll position for tab restoration
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+/// Represents a ScrollPosition.
 pub struct ScrollPosition {
     pub x: i32,
     pub y: i32,
@@ -927,6 +956,7 @@ pub struct ScrollPosition {
 
 /// Tab navigation history entry
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a TabHistoryEntry.
 pub struct TabHistoryEntry {
     pub url: String,
     pub title: String,
@@ -935,6 +965,7 @@ pub struct TabHistoryEntry {
 
 /// Window state for session restoration
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a WindowState.
 pub struct WindowState {
     pub x: i32,
     pub y: i32,
@@ -959,6 +990,7 @@ impl Default for WindowState {
 
 /// Session-specific settings
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a SessionSettings.
 pub struct SessionSettings {
     /// Proxy configuration for this session
     pub proxy_config: Option<SessionProxyConfig>,
@@ -986,6 +1018,7 @@ impl Default for SessionSettings {
 
 /// Proxy configuration for a session
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a SessionProxyConfig.
 pub struct SessionProxyConfig {
     pub enabled: bool,
     pub proxy_type: String,
@@ -1352,6 +1385,7 @@ impl SessionManager {
 
 /// Session statistics
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a SessionStatistics.
 pub struct SessionStatistics {
     pub total_sessions: usize,
     pub total_tabs: usize,

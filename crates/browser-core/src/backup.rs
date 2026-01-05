@@ -6,6 +6,7 @@ use crate::proxy::ProxySettings;
 use crate::storage::{Cookie, HistoryEntry, Bookmark};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a BackupData.
 pub struct BackupData {
     pub version: String,
     pub timestamp: String,
@@ -18,6 +19,7 @@ pub struct BackupData {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a BrowserConfig.
 pub struct BrowserConfig {
     pub user_agent: Option<String>,
     pub timezone: Option<String>,
@@ -26,6 +28,7 @@ pub struct BrowserConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a LocalStorageEntry.
 pub struct LocalStorageEntry {
     pub origin: String,
     pub key: String,
@@ -33,6 +36,7 @@ pub struct LocalStorageEntry {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a BackupOptions.
 pub struct BackupOptions {
     pub include_proxy_settings: bool,
     pub include_browser_config: bool,
@@ -58,6 +62,7 @@ impl Default for BackupOptions {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a BackupInfo.
 pub struct BackupInfo {
     pub id: String,
     pub filename: String,
@@ -68,6 +73,7 @@ pub struct BackupInfo {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a AutoBackupSettings.
 pub struct AutoBackupSettings {
     pub enabled: bool,
     pub frequency: BackupFrequency,
@@ -77,6 +83,7 @@ pub struct AutoBackupSettings {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Enumeration of BackupFrequency variants.
 pub enum BackupFrequency {
     Daily,
     Weekly,
@@ -95,11 +102,13 @@ impl Default for AutoBackupSettings {
     }
 }
 
+/// Represents a BackupManager.
 pub struct BackupManager {
     backup_dir: PathBuf,
 }
 
 impl BackupManager {
+    /// Creates a new new.
     pub fn new(backup_dir: &Path) -> Result<Self> {
         std::fs::create_dir_all(backup_dir)?;
         Ok(Self {
@@ -107,6 +116,7 @@ impl BackupManager {
         })
     }
 
+    /// Creates a new backup.
     pub async fn create_backup(&self, data: BackupData, options: &BackupOptions) -> Result<BackupInfo> {
         let id = uuid::Uuid::new_v4().to_string();
         let timestamp = chrono::Utc::now().format("%Y%m%d_%H%M%S").to_string();
@@ -135,6 +145,7 @@ impl BackupManager {
         })
     }
 
+    /// Restores backup.
     pub async fn restore_backup(&self, path: &Path, password: Option<&str>) -> Result<BackupData> {
         let content = std::fs::read_to_string(path)?;
         
@@ -148,6 +159,7 @@ impl BackupManager {
         Ok(data)
     }
 
+    /// Lists backups.
     pub async fn list_backups(&self) -> Result<Vec<BackupInfo>> {
         let mut backups = Vec::new();
 
@@ -193,6 +205,7 @@ impl BackupManager {
         Ok(backups)
     }
 
+    /// Removes the backup.
     pub async fn delete_backup(&self, id: &str) -> Result<()> {
         let backups = self.list_backups().await?;
         
@@ -204,6 +217,7 @@ impl BackupManager {
         }
     }
 
+    /// Cleans up old backups.
     pub async fn cleanup_old_backups(&self, max_backups: u32) -> Result<u32> {
         let mut backups = self.list_backups().await?;
         let mut deleted = 0;

@@ -8,6 +8,7 @@ use uuid::Uuid;
 use virtual_ip::{IPGenerator, VirtualIP};
 use tracing::{info, debug};
 
+/// Represents a TabIPManager.
 pub struct TabIPManager {
     tabs: RwLock<HashMap<String, TabProfile>>,
     ip_generator: IPGenerator,

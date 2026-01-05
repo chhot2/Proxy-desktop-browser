@@ -37,7 +37,7 @@ fn create_test_proxy(ip: &str, port: u16, country: &str) -> FreeProxy {
 }
 
 async fn create_test_provider_manager() -> Arc<RwLock<FreeIpProviderManager>> {
-    Arc::new(RwLock::new(FreeIpProviderManager::new().unwrap()))
+    Arc::new(RwLock::new(FreeIpProviderManager::new().expect("Failed to acquire lock")))
 }
 
 // ============================================================================
@@ -207,12 +207,12 @@ fn test_proxy_metrics_serialization() {
     };
     
     // Test serialization
-    let json = serde_json::to_string(&metrics).unwrap();
+    let json = serde_json::to_string(&metrics).expect("Metrics operation failed");
     assert!(json.contains("response_time_ms"));
     assert!(json.contains("success_rate"));
     
     // Test deserialization
-    let parsed: ProxyMetrics = serde_json::from_str(&json).unwrap();
+    let parsed: ProxyMetrics = serde_json::from_str(&json).expect("Json operation failed");
     assert_eq!(parsed.total_requests, 50);
 }
 
@@ -249,11 +249,11 @@ fn test_proxy_session_stats_serialization() {
         duration_seconds: 600,
     };
     
-    let json = serde_json::to_string(&stats).unwrap();
+    let json = serde_json::to_string(&stats).expect("Stats operation failed");
     assert!(json.contains("tab_id"));
     assert!(json.contains("current_proxy_ip"));
     
-    let parsed: ProxySessionStats = serde_json::from_str(&json).unwrap();
+    let parsed: ProxySessionStats = serde_json::from_str(&json).expect("Json operation failed");
     assert_eq!(parsed.proxy_country, "France");
 }
 

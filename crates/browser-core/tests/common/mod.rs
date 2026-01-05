@@ -86,10 +86,15 @@ macro_rules! skip_if_no_chrome {
 
 /// Test URLs for integration tests
 pub mod test_urls {
+    /// Constant value for EXAMPLE COM.
     pub const EXAMPLE_COM: &str = "https://example.com";
+    /// Constant value for HTTPBIN IP.
     pub const HTTPBIN_IP: &str = "https://httpbin.org/ip";
+    /// Constant value for HTTPBIN USER AGENT.
     pub const HTTPBIN_USER_AGENT: &str = "https://httpbin.org/user-agent";
+    /// Constant value for HTTPBIN HEADERS.
     pub const HTTPBIN_HEADERS: &str = "https://httpbin.org/headers";
+    /// Constant value for ABOUT BLANK.
     pub const ABOUT_BLANK: &str = "about:blank";
 }
 

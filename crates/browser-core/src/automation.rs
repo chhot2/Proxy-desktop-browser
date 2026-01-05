@@ -27,6 +27,7 @@ pub struct VisualAutomationBuilder {
 
 /// A workflow is a sequence of automation steps
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a Workflow.
 pub struct Workflow {
     pub id: String,
     pub name: String,
@@ -39,6 +40,7 @@ pub struct Workflow {
 
 /// Individual automation step
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a AutomationStep.
 pub struct AutomationStep {
     pub id: String,
     pub step_type: StepType,
@@ -51,6 +53,7 @@ pub struct AutomationStep {
 
 /// Types of automation steps
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Enumeration of StepType variants.
 pub enum StepType {
     Navigate { url: String },
     Click,
@@ -73,6 +76,7 @@ pub enum StepType {
 
 /// Scroll direction
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Enumeration of ScrollDirection variants.
 pub enum ScrollDirection {
     Up,
     Down,
@@ -82,6 +86,7 @@ pub enum ScrollDirection {
 
 /// Condition for conditional steps
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a StepCondition.
 pub struct StepCondition {
     pub condition_type: ConditionType,
     pub selector: Option<String>,
@@ -90,6 +95,7 @@ pub struct StepCondition {
 
 /// Types of conditions
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Enumeration of ConditionType variants.
 pub enum ConditionType {
     ElementExists,
     ElementVisible,
@@ -102,6 +108,7 @@ pub enum ConditionType {
 }
 
 impl VisualAutomationBuilder {
+    /// Creates a new new.
     pub fn new() -> Self {
         Self {
             workflows: HashMap::new(),
@@ -184,6 +191,7 @@ pub struct NaturalLanguageAutomation {
 
 /// Command pattern for NL matching
 #[derive(Debug, Clone)]
+/// Represents a CommandPattern.
 pub struct CommandPattern {
     pub pattern: String,
     pub step_type: StepType,
@@ -192,6 +200,7 @@ pub struct CommandPattern {
 
 /// Context for automation
 #[derive(Debug, Clone, Default)]
+/// Represents a AutomationContext.
 pub struct AutomationContext {
     pub current_url: Option<String>,
     pub variables: HashMap<String, String>,
@@ -199,6 +208,7 @@ pub struct AutomationContext {
 }
 
 impl NaturalLanguageAutomation {
+    /// Creates a new new.
     pub fn new() -> Self {
         let patterns = vec![
             CommandPattern {
@@ -354,6 +364,7 @@ pub struct ActionRecorder {
 
 /// Recorded browser action
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a RecordedAction.
 pub struct RecordedAction {
     pub action_type: ActionType,
     pub timestamp_ms: u128,
@@ -365,6 +376,7 @@ pub struct RecordedAction {
 
 /// Type of recorded action
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Enumeration of ActionType variants.
 pub enum ActionType {
     PageLoad,
     Click,
@@ -384,6 +396,7 @@ pub enum ActionType {
 }
 
 impl ActionRecorder {
+    /// Creates a new new.
     pub fn new() -> Self {
         Self {
             recording: false,
@@ -500,6 +513,7 @@ pub struct ConditionEvaluator {
 }
 
 impl ConditionEvaluator {
+    /// Creates a new new.
     pub fn new() -> Self {
         Self {
             custom_evaluators: HashMap::new(),
@@ -578,6 +592,7 @@ pub struct DistributedAutomation {
 
 /// Automation node (worker)
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a AutomationNode.
 pub struct AutomationNode {
     pub id: String,
     pub name: String,
@@ -589,6 +604,7 @@ pub struct AutomationNode {
 
 /// Node status
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+/// Enumeration of NodeStatus variants.
 pub enum NodeStatus {
     Available,
     Busy,
@@ -598,6 +614,7 @@ pub enum NodeStatus {
 
 /// Distributed task
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a DistributedTask.
 pub struct DistributedTask {
     pub id: String,
     pub workflow_id: String,
@@ -609,6 +626,7 @@ pub struct DistributedTask {
 
 /// Task status
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+/// Enumeration of TaskStatus variants.
 pub enum TaskStatus {
     Pending,
     Assigned,
@@ -620,6 +638,7 @@ pub enum TaskStatus {
 
 /// Task result
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a TaskResult.
 pub struct TaskResult {
     pub task_id: String,
     pub node_id: String,
@@ -630,6 +649,7 @@ pub struct TaskResult {
 }
 
 impl DistributedAutomation {
+    /// Creates a new new.
     pub fn new() -> Self {
         Self {
             nodes: HashMap::new(),
@@ -749,6 +769,7 @@ pub struct AutomationManager {
 }
 
 impl AutomationManager {
+    /// Creates a new new.
     pub fn new() -> Self {
         info!("Initializing Automation Manager");
         Self {
@@ -798,6 +819,7 @@ impl Default for AutomationManager {
 
 /// Automation statistics
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a AutomationStats.
 pub struct AutomationStats {
     pub workflows_count: usize,
     pub recorded_actions: usize,

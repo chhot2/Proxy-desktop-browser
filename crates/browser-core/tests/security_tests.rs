@@ -32,17 +32,17 @@ async fn test_certificate_pinning() {
     // Verify pin matches
     let result = manager.verify_certificate_pin("secure.example.com", "sha256/abc123").await;
     assert!(result.is_ok());
-    assert!(result.unwrap());
+    assert!(result.expect("Result operation failed"));
     
     // Verify wrong pin fails
     let result = manager.verify_certificate_pin("secure.example.com", "sha256/wrong").await;
     assert!(result.is_ok());
-    assert!(!result.unwrap());
+    assert!(!result.expect("Result operation failed"));
     
     // Verify subdomain matches (include_subdomains = true)
     let result = manager.verify_certificate_pin("api.secure.example.com", "sha256/def456").await;
     assert!(result.is_ok());
-    assert!(result.unwrap());
+    assert!(result.expect("Result operation failed"));
 }
 
 /// Test certificate pin removal
@@ -278,7 +278,7 @@ async fn test_audit_json_export() {
     
     let json = manager.export_to_json().await;
     assert!(json.is_ok());
-    let json_str = json.unwrap();
+    let json_str = json.expect("Json operation failed");
     assert!(json_str.contains("Login"));
     assert!(json_str.contains("Test event"));
 }

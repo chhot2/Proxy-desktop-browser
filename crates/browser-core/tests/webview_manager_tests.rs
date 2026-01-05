@@ -74,7 +74,7 @@ fn test_webview_tab_with_proxy() {
     };
     
     assert!(tab.proxy_config.is_some());
-    let config = tab.proxy_config.unwrap();
+    let config = tab.proxy_config.expect("Configuration error");
     assert_eq!(config.proxy_type, ProxyType::Http);
     assert_eq!(config.host, Some("192.168.1.1".to_string()));
     assert_eq!(config.port, Some(8080));
@@ -95,12 +95,12 @@ fn test_webview_tab_clone() {
 fn test_webview_tab_serialization() {
     let tab = create_test_tab();
     
-    let json = serde_json::to_string(&tab).unwrap();
+    let json = serde_json::to_string(&tab).expect("Tab operation failed");
     assert!(json.contains("tab_id"));
     assert!(json.contains("url"));
     assert!(json.contains("zoom_level"));
     
-    let parsed: WebviewTab = serde_json::from_str(&json).unwrap();
+    let parsed: WebviewTab = serde_json::from_str(&json).expect("Json operation failed");
     assert_eq!(parsed.tab_id, tab.tab_id);
     assert_eq!(parsed.url, tab.url);
 }
@@ -288,9 +288,9 @@ fn test_multiple_tabs_with_different_proxies() {
     
     // Verify each tab has a different proxy
     for (i, tab) in tabs.iter().enumerate() {
-        let config = tab.proxy_config.as_ref().unwrap();
-        assert_eq!(config.host.as_ref().unwrap(), proxies[i].0);
-        assert_eq!(config.port.unwrap(), proxies[i].1);
+        let config = tab.proxy_config.as_ref().expect("Configuration error");
+        assert_eq!(config.host.as_ref().expect("Configuration error"), proxies[i].0);
+        assert_eq!(config.port.expect("Configuration error"), proxies[i].1);
     }
 }
 
@@ -332,7 +332,7 @@ fn test_tab_collection_operations() {
         tab.title = "Updated Title".to_string();
     }
     
-    let updated = tabs.get("tab-3").unwrap();
+    let updated = tabs.get("tab-3").expect("Failed to get value");
     assert_eq!(updated.url, "https://updated.com");
     assert_eq!(updated.title, "Updated Title");
 }

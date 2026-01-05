@@ -19,6 +19,7 @@ use virtual_ip::IPGenerator;
 
 /// Combined browser tab information
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a BrowserTab.
 pub struct BrowserTab {
     pub tab_id: String,
     pub profile: TabProfile,
@@ -32,6 +33,7 @@ pub struct BrowserTab {
 
 /// Configuration for creating a new browser tab
 #[derive(Debug, Clone)]
+/// Represents a CreateTabConfig.
 pub struct CreateTabConfig {
     pub url: Option<String>,
     pub country_code: Option<String>,
@@ -468,6 +470,7 @@ impl BrowserTabManager {
 
 /// Statistics about browser tabs
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a TabStats.
 pub struct TabStats {
     pub total_tabs: usize,
     pub active_tabs: usize,
@@ -477,6 +480,7 @@ pub struct TabStats {
 
 // Tauri command handlers for BrowserTabManager
 #[tauri::command]
+/// Creates a new browser tab.
 pub async fn create_browser_tab(
     manager: State<'_, Arc<BrowserTabManager>>,
     url: Option<String>,
@@ -496,6 +500,7 @@ pub async fn create_browser_tab(
 }
 
 #[tauri::command]
+/// Closes browser tab.
 pub async fn close_browser_tab(
     manager: State<'_, Arc<BrowserTabManager>>,
     tab_id: String,
@@ -506,6 +511,7 @@ pub async fn close_browser_tab(
 }
 
 #[tauri::command]
+/// Performs switch browser tab operation.
 pub async fn switch_browser_tab(
     manager: State<'_, Arc<BrowserTabManager>>,
     tab_id: String,
@@ -516,6 +522,7 @@ pub async fn switch_browser_tab(
 }
 
 #[tauri::command]
+/// Performs navigate browser tab operation.
 pub async fn navigate_browser_tab(
     manager: State<'_, Arc<BrowserTabManager>>,
     tab_id: String,
@@ -527,6 +534,7 @@ pub async fn navigate_browser_tab(
 }
 
 #[tauri::command]
+/// Performs browser tab go back operation.
 pub async fn browser_tab_go_back(
     manager: State<'_, Arc<BrowserTabManager>>,
     tab_id: String,
@@ -537,6 +545,7 @@ pub async fn browser_tab_go_back(
 }
 
 #[tauri::command]
+/// Performs browser tab go forward operation.
 pub async fn browser_tab_go_forward(
     manager: State<'_, Arc<BrowserTabManager>>,
     tab_id: String,
@@ -547,6 +556,7 @@ pub async fn browser_tab_go_forward(
 }
 
 #[tauri::command]
+/// Reloads browser tab.
 pub async fn reload_browser_tab(
     manager: State<'_, Arc<BrowserTabManager>>,
     tab_id: String,
@@ -557,6 +567,7 @@ pub async fn reload_browser_tab(
 }
 
 #[tauri::command]
+/// Stops the browser tab.
 pub async fn stop_browser_tab(
     manager: State<'_, Arc<BrowserTabManager>>,
     tab_id: String,
@@ -567,6 +578,7 @@ pub async fn stop_browser_tab(
 }
 
 #[tauri::command]
+/// Sets the browser tab zoom.
 pub async fn set_browser_tab_zoom(
     manager: State<'_, Arc<BrowserTabManager>>,
     tab_id: String,
@@ -578,6 +590,7 @@ pub async fn set_browser_tab_zoom(
 }
 
 #[tauri::command]
+/// Rotates browser tab ip.
 pub async fn rotate_browser_tab_ip(
     manager: State<'_, Arc<BrowserTabManager>>,
     tab_id: String,
@@ -589,6 +602,7 @@ pub async fn rotate_browser_tab_ip(
 }
 
 #[tauri::command]
+/// Gets the browser tabs.
 pub async fn get_browser_tabs(
     manager: State<'_, Arc<BrowserTabManager>>,
 ) -> Result<Vec<BrowserTab>, String> {
@@ -596,6 +610,7 @@ pub async fn get_browser_tabs(
 }
 
 #[tauri::command]
+/// Gets the browser tab.
 pub async fn get_browser_tab(
     manager: State<'_, Arc<BrowserTabManager>>,
     tab_id: String,
@@ -604,6 +619,7 @@ pub async fn get_browser_tab(
 }
 
 #[tauri::command]
+/// Gets the active browser tab.
 pub async fn get_active_browser_tab(
     manager: State<'_, Arc<BrowserTabManager>>,
 ) -> Result<Option<BrowserTab>, String> {
@@ -611,6 +627,7 @@ pub async fn get_active_browser_tab(
 }
 
 #[tauri::command]
+/// Executes script in browser tab.
 pub async fn execute_script_in_browser_tab(
     manager: State<'_, Arc<BrowserTabManager>>,
     tab_id: String,
@@ -622,6 +639,7 @@ pub async fn execute_script_in_browser_tab(
 }
 
 #[tauri::command]
+/// Clears browser tab data.
 pub async fn clear_browser_tab_data(
     manager: State<'_, Arc<BrowserTabManager>>,
     tab_id: String,
@@ -634,6 +652,7 @@ pub async fn clear_browser_tab_data(
 }
 
 #[tauri::command]
+/// Gets the browser tab stats.
 pub async fn get_browser_tab_stats(
     manager: State<'_, Arc<BrowserTabManager>>,
 ) -> Result<TabStats, String> {
@@ -641,6 +660,7 @@ pub async fn get_browser_tab_stats(
 }
 
 #[tauri::command]
+/// Updates the webview tab state.
 pub async fn update_webview_tab_state(
     manager: State<'_, Arc<BrowserTabManager>>,
     webview_tab_id: String,

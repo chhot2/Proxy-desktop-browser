@@ -18,6 +18,7 @@ use tracing::{debug, info, warn};
 /// EXP-1001: Multi-Engine Architecture
 /// Allows dynamic switching between rendering engines
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+/// Enumeration of EngineType variants.
 pub enum EngineType {
     Chromium,
     WebKit,
@@ -33,6 +34,7 @@ pub struct MultiEngineSystem {
 }
 
 impl MultiEngineSystem {
+    /// Creates a new new.
     pub fn new() -> Self {
         let mut scores = HashMap::new();
         scores.insert(EngineType::Chromium, 1.0);
@@ -80,6 +82,7 @@ impl Default for MultiEngineSystem {
 
 /// EXP-1003: Process Isolation Architecture v3
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a ProcessIsolationConfig.
 pub struct ProcessIsolationConfig {
     pub browser_process_isolated: bool,
     pub gpu_process_isolated: bool,
@@ -89,6 +92,7 @@ pub struct ProcessIsolationConfig {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+/// Enumeration of SandboxLevel variants.
 pub enum SandboxLevel {
     None,
     Basic,
@@ -115,6 +119,7 @@ pub struct WasiBrowser {
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+/// Represents a WasiCapabilities.
 pub struct WasiCapabilities {
     pub filesystem_access: bool,
     pub network_access: bool,
@@ -124,6 +129,7 @@ pub struct WasiCapabilities {
 }
 
 impl WasiBrowser {
+    /// Creates a new new.
     pub fn new() -> Self {
         Self {
             wasm_modules: HashMap::new(),
@@ -131,11 +137,13 @@ impl WasiBrowser {
         }
     }
 
+    /// Loads the module.
     pub fn load_module(&mut self, name: &str, wasm: Vec<u8>) {
         self.wasm_modules.insert(name.to_string(), wasm);
         info!("Loaded WASM module: {}", name);
     }
 
+    /// Sets the capabilities.
     pub fn set_capabilities(&mut self, caps: WasiCapabilities) {
         self.capabilities = caps;
     }
@@ -153,6 +161,7 @@ impl Default for WasiBrowser {
 
 /// EXP-2001: Mesh Network Proxy System
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a MeshNode.
 pub struct MeshNode {
     pub node_id: String,
     pub public_key: String,
@@ -161,6 +170,7 @@ pub struct MeshNode {
     pub latency_ms: u32,
 }
 
+/// Represents a MeshProxyNetwork.
 pub struct MeshProxyNetwork {
     local_node: Option<MeshNode>,
     peers: Vec<MeshNode>,
@@ -168,6 +178,7 @@ pub struct MeshProxyNetwork {
 }
 
 impl MeshProxyNetwork {
+    /// Creates a new new.
     pub fn new() -> Self {
         Self {
             local_node: None,
@@ -176,15 +187,18 @@ impl MeshProxyNetwork {
         }
     }
 
+    /// Performs join network operation.
     pub fn join_network(&mut self, node: MeshNode) {
         info!("Joining mesh network as node: {}", node.node_id);
         self.local_node = Some(node);
     }
 
+    /// Adds a peer.
     pub fn add_peer(&mut self, peer: MeshNode) {
         self.peers.push(peer);
     }
 
+    /// Calculates optimal route.
     pub fn calculate_optimal_route(&self, destination: &str) -> Vec<String> {
         // Multi-hop routing algorithm
         self.routing_table.get(destination).cloned().unwrap_or_default()
@@ -205,6 +219,7 @@ pub struct OnionRouter {
 }
 
 impl OnionRouter {
+    /// Creates a new new.
     pub fn new(hops: u8) -> Self {
         Self {
             circuit_hops: hops.max(3), // Minimum 3 hops
@@ -213,11 +228,13 @@ impl OnionRouter {
         }
     }
 
+    /// Performs enable operation.
     pub fn enable(&mut self) {
         self.enabled = true;
         info!("Onion routing enabled with {} hops", self.circuit_hops);
     }
 
+    /// Builds the circuit.
     pub fn build_circuit(&mut self) -> Result<u32> {
         if !self.enabled {
             return Err(anyhow::anyhow!("Onion routing not enabled"));
@@ -235,6 +252,7 @@ impl Default for OnionRouter {
 
 /// EXP-2005: DNS Over Everything
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+/// Enumeration of DnsStrategy variants.
 pub enum DnsStrategy {
     Standard,
     OverHttps,
@@ -244,6 +262,7 @@ pub enum DnsStrategy {
     Parallel,
 }
 
+/// Represents a DnsResolver.
 pub struct DnsResolver {
     strategy: DnsStrategy,
     doh_servers: Vec<String>,
@@ -252,6 +271,7 @@ pub struct DnsResolver {
 }
 
 impl DnsResolver {
+    /// Creates a new new.
     pub fn new(strategy: DnsStrategy) -> Self {
         Self {
             strategy,
@@ -267,10 +287,12 @@ impl DnsResolver {
         }
     }
 
+    /// Gets the strategy.
     pub fn get_strategy(&self) -> DnsStrategy {
         self.strategy
     }
 
+    /// Sets the strategy.
     pub fn set_strategy(&mut self, strategy: DnsStrategy) {
         self.strategy = strategy;
         info!("DNS strategy set to {:?}", strategy);
@@ -294,6 +316,7 @@ pub struct ZkAuthSystem {
 }
 
 impl ZkAuthSystem {
+    /// Creates a new new.
     pub fn new() -> Self {
         Self {
             enabled: false,
@@ -301,6 +324,7 @@ impl ZkAuthSystem {
         }
     }
 
+    /// Performs enable operation.
     pub fn enable(&mut self) {
         self.enabled = true;
         info!("Zero-knowledge authentication enabled");
@@ -327,6 +351,7 @@ impl Default for ZkAuthSystem {
 
 /// EXP-3003: Secure Enclave Integration
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Enumeration of EnclaveType variants.
 pub enum EnclaveType {
     SgxEnclave,
     TrustZone,
@@ -334,12 +359,14 @@ pub enum EnclaveType {
     Software,
 }
 
+/// Represents a SecureEnclaveManager.
 pub struct SecureEnclaveManager {
     enclave_type: EnclaveType,
     sealed_data: HashMap<String, Vec<u8>>,
 }
 
 impl SecureEnclaveManager {
+    /// Creates a new new.
     pub fn new(enclave_type: EnclaveType) -> Self {
         Self {
             enclave_type,
@@ -347,12 +374,14 @@ impl SecureEnclaveManager {
         }
     }
 
+    /// Performs seal data operation.
     pub fn seal_data(&mut self, key: &str, data: &[u8]) {
         // In production, this would use actual hardware encryption
         self.sealed_data.insert(key.to_string(), data.to_vec());
         info!("Data sealed to {:?} enclave", self.enclave_type);
     }
 
+    /// Performs unseal data operation.
     pub fn unseal_data(&self, key: &str) -> Option<Vec<u8>> {
         self.sealed_data.get(key).cloned()
     }
@@ -372,6 +401,7 @@ pub struct MemorySafeSandbox {
 }
 
 impl MemorySafeSandbox {
+    /// Creates a new new.
     pub fn new(max_memory_mb: usize) -> Self {
         Self {
             allocations: HashMap::new(),
@@ -380,6 +410,7 @@ impl MemorySafeSandbox {
         }
     }
 
+    /// Performs allocate operation.
     pub fn allocate(&mut self, id: &str, size: usize) -> Result<()> {
         if self.total_allocated + size > self.max_memory {
             return Err(anyhow::anyhow!("Memory limit exceeded"));
@@ -389,12 +420,14 @@ impl MemorySafeSandbox {
         Ok(())
     }
 
+    /// Performs deallocate operation.
     pub fn deallocate(&mut self, id: &str) {
         if let Some(size) = self.allocations.remove(id) {
             self.total_allocated -= size;
         }
     }
 
+    /// Performs memory usage operation.
     pub fn memory_usage(&self) -> f64 {
         self.total_allocated as f64 / self.max_memory as f64 * 100.0
     }
@@ -415,6 +448,7 @@ pub struct BehavioralAuth {
 }
 
 impl BehavioralAuth {
+    /// Creates a new new.
     pub fn new() -> Self {
         Self {
             typing_patterns: Vec::new(),
@@ -424,11 +458,13 @@ impl BehavioralAuth {
         }
     }
 
+    /// Performs analyze keystroke operation.
     pub fn analyze_keystroke(&mut self, timing_ms: f64) {
         self.typing_patterns.push(timing_ms);
         self.update_confidence();
     }
 
+    /// Performs analyze mouse operation.
     pub fn analyze_mouse(&mut self, x: f64, y: f64) {
         self.mouse_patterns.push((x, y));
         self.update_confidence();
@@ -440,10 +476,12 @@ impl BehavioralAuth {
         self.confidence = (samples as f64 / 100.0).min(1.0);
     }
 
+    /// Performs confidence score operation.
     pub fn confidence_score(&self) -> f64 {
         self.confidence
     }
 
+    /// Performs detect anomaly operation.
     pub fn detect_anomaly(&self) -> bool {
         self.confidence < self.anomaly_threshold
     }
@@ -467,6 +505,7 @@ pub struct DifferentialPrivacy {
 }
 
 impl DifferentialPrivacy {
+    /// Creates a new new.
     pub fn new(epsilon: f64, delta: f64) -> Self {
         Self {
             epsilon,
@@ -475,6 +514,7 @@ impl DifferentialPrivacy {
         }
     }
 
+    /// Adds a noise.
     pub fn add_noise(&self, value: f64) -> f64 {
         use rand::Rng;
         let mut rng = rand::thread_rng();
@@ -482,10 +522,12 @@ impl DifferentialPrivacy {
         value + noise
     }
 
+    /// Performs privacy budget remaining operation.
     pub fn privacy_budget_remaining(&self) -> f64 {
         self.privacy_budget
     }
 
+    /// Performs consume budget operation.
     pub fn consume_budget(&mut self, amount: f64) {
         self.privacy_budget = (self.privacy_budget - amount).max(0.0);
     }
@@ -505,6 +547,7 @@ pub struct DecoyTrafficGenerator {
 }
 
 impl DecoyTrafficGenerator {
+    /// Creates a new new.
     pub fn new(decoy_rate: f64) -> Self {
         Self {
             decoy_rate: decoy_rate.clamp(0.0, 1.0),
@@ -518,6 +561,7 @@ impl DecoyTrafficGenerator {
         }
     }
 
+    /// Generates decoys.
     pub fn generate_decoys(&mut self, count: usize) -> Vec<String> {
         use rand::seq::SliceRandom;
         let mut rng = rand::thread_rng();
@@ -530,6 +574,7 @@ impl DecoyTrafficGenerator {
         decoys
     }
 
+    /// Performs should add decoy operation.
     pub fn should_add_decoy(&self) -> bool {
         use rand::Rng;
         rand::thread_rng().gen::<f64>() < self.decoy_rate
@@ -550,6 +595,7 @@ pub struct AntiCorrelationSystem {
 }
 
 impl AntiCorrelationSystem {
+    /// Creates a new new.
     pub fn new() -> Self {
         Self {
             timing_jitter_ms: 100,
@@ -558,6 +604,7 @@ impl AntiCorrelationSystem {
         }
     }
 
+    /// Performs partition identity operation.
     pub fn partition_identity(&mut self, domain: &str) -> String {
         let identity = self.partitioned_identities
             .entry(domain.to_string())
@@ -565,11 +612,13 @@ impl AntiCorrelationSystem {
         identity.clone()
     }
 
+    /// Performs randomize timing operation.
     pub fn randomize_timing(&self) -> u64 {
         use rand::Rng;
         rand::thread_rng().gen_range(0..self.timing_jitter_ms)
     }
 
+    /// Sets the jitter.
     pub fn set_jitter(&mut self, jitter_ms: u64) {
         self.timing_jitter_ms = jitter_ms;
     }
@@ -593,6 +642,7 @@ pub struct LocalLlm {
 }
 
 impl LocalLlm {
+    /// Creates a new new.
     pub fn new() -> Self {
         Self {
             model_loaded: false,
@@ -601,12 +651,14 @@ impl LocalLlm {
         }
     }
 
+    /// Loads the model.
     pub fn load_model(&mut self, name: &str) {
         self.model_name = name.to_string();
         self.model_loaded = true;
         info!("Loaded local LLM: {}", name);
     }
 
+    /// Performs summarize operation.
     pub fn summarize(&self, content: &str) -> String {
         if !self.model_loaded {
             return "Model not loaded".to_string();
@@ -615,6 +667,7 @@ impl LocalLlm {
         format!("Summary of {} characters of content", content.len())
     }
 
+    /// Performs translate operation.
     pub fn translate(&self, text: &str, target_lang: &str) -> String {
         if !self.model_loaded {
             return text.to_string();
@@ -622,6 +675,7 @@ impl LocalLlm {
         format!("[Translated to {}]: {}", target_lang, text)
     }
 
+    /// Performs answer question operation.
     pub fn answer_question(&self, context: &str, question: &str) -> String {
         if !self.model_loaded {
             return "Model not loaded".to_string();
@@ -644,6 +698,7 @@ pub struct VisualEngine {
 }
 
 impl VisualEngine {
+    /// Creates a new new.
     pub fn new() -> Self {
         Self {
             ocr_enabled: true,
@@ -652,16 +707,19 @@ impl VisualEngine {
         }
     }
 
+    /// Extracts text.
     pub fn extract_text(&mut self, _image_data: &[u8]) -> String {
         self.processed_images += 1;
         "Extracted text from image".to_string()
     }
 
+    /// Performs detect objects operation.
     pub fn detect_objects(&mut self, _image_data: &[u8]) -> Vec<String> {
         self.processed_images += 1;
         vec!["object1".to_string(), "object2".to_string()]
     }
 
+    /// Performs describe image operation.
     pub fn describe_image(&mut self, _image_data: &[u8]) -> String {
         self.processed_images += 1;
         "AI-generated image description".to_string()
@@ -681,6 +739,7 @@ pub struct IntelligentFormFiller {
 }
 
 impl IntelligentFormFiller {
+    /// Creates a new new.
     pub fn new() -> Self {
         Self {
             profiles: HashMap::new(),
@@ -688,20 +747,24 @@ impl IntelligentFormFiller {
         }
     }
 
+    /// Adds a profile.
     pub fn add_profile(&mut self, name: &str) {
         self.profiles.insert(name.to_string(), HashMap::new());
     }
 
+    /// Sets the field.
     pub fn set_field(&mut self, profile: &str, field: &str, value: &str) {
         if let Some(p) = self.profiles.get_mut(profile) {
             p.insert(field.to_string(), value.to_string());
         }
     }
 
+    /// Performs suggest value operation.
     pub fn suggest_value(&self, profile: &str, field_name: &str) -> Option<String> {
         self.profiles.get(profile)?.get(field_name).cloned()
     }
 
+    /// Performs learn from input operation.
     pub fn learn_from_input(&mut self, profile: &str, field: &str, value: &str) {
         if self.learning_enabled {
             self.set_field(profile, field, value);
@@ -721,6 +784,7 @@ impl Default for IntelligentFormFiller {
 
 /// EXP-6001: GPU-First Rendering Pipeline
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a GpuRenderConfig.
 pub struct GpuRenderConfig {
     pub vulkan_enabled: bool,
     pub webgpu_enabled: bool,
@@ -741,6 +805,7 @@ impl Default for GpuRenderConfig {
 
 /// EXP-6002: 3D Web Browser concept
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a Spatial3DConfig.
 pub struct Spatial3DConfig {
     pub vr_mode_enabled: bool,
     pub ar_overlay_enabled: bool,
@@ -767,6 +832,7 @@ pub struct AdaptiveRenderer {
 }
 
 impl AdaptiveRenderer {
+    /// Creates a new new.
     pub fn new(target_fps: u32) -> Self {
         Self {
             target_fps,
@@ -775,6 +841,7 @@ impl AdaptiveRenderer {
         }
     }
 
+    /// Performs adjust resolution operation.
     pub fn adjust_resolution(&mut self, current_fps: u32) {
         if current_fps < self.target_fps {
             self.current_resolution_scale = (self.current_resolution_scale - 0.1).max(0.5);
@@ -783,6 +850,7 @@ impl AdaptiveRenderer {
         }
     }
 
+    /// Enables foveated.
     pub fn enable_foveated(&mut self) {
         self.foveated_rendering = true;
     }
@@ -800,6 +868,7 @@ impl Default for AdaptiveRenderer {
 
 /// EXP-14001: Post-Quantum Cryptography
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+/// Enumeration of PqcAlgorithm variants.
 pub enum PqcAlgorithm {
     Kyber,
     Dilithium,
@@ -808,6 +877,7 @@ pub enum PqcAlgorithm {
     Classic, // Non-PQC fallback
 }
 
+/// Represents a PostQuantumCrypto.
 pub struct PostQuantumCrypto {
     algorithm: PqcAlgorithm,
     enabled: bool,
@@ -815,6 +885,7 @@ pub struct PostQuantumCrypto {
 }
 
 impl PostQuantumCrypto {
+    /// Creates a new new.
     pub fn new() -> Self {
         Self {
             algorithm: PqcAlgorithm::Kyber,
@@ -823,12 +894,14 @@ impl PostQuantumCrypto {
         }
     }
 
+    /// Performs enable operation.
     pub fn enable(&mut self, algorithm: PqcAlgorithm) {
         self.algorithm = algorithm;
         self.enabled = true;
         info!("Post-quantum cryptography enabled with {:?}", algorithm);
     }
 
+    /// Checks if quantum safe.
     pub fn is_quantum_safe(&self) -> bool {
         self.enabled && self.algorithm != PqcAlgorithm::Classic
     }
@@ -852,6 +925,7 @@ pub struct IpfsBrowser {
 }
 
 impl IpfsBrowser {
+    /// Creates a new new.
     pub fn new() -> Self {
         Self {
             gateway_url: "https://ipfs.io".to_string(),
@@ -860,15 +934,18 @@ impl IpfsBrowser {
         }
     }
 
+    /// Performs enable operation.
     pub fn enable(&mut self) {
         self.enabled = true;
         info!("IPFS browser integration enabled");
     }
 
+    /// Performs resolve ipfs url operation.
     pub fn resolve_ipfs_url(&self, cid: &str) -> String {
         format!("{}/ipfs/{}", self.gateway_url, cid)
     }
 
+    /// Performs pin content operation.
     pub fn pin_content(&mut self, cid: &str) {
         self.pinned_content.push(cid.to_string());
     }
@@ -888,6 +965,7 @@ pub struct BlockchainDns {
 }
 
 impl BlockchainDns {
+    /// Creates a new new.
     pub fn new() -> Self {
         Self {
             enabled: false,
@@ -901,10 +979,12 @@ impl BlockchainDns {
         }
     }
 
+    /// Checks if blockchain domain.
     pub fn is_blockchain_domain(&self, domain: &str) -> bool {
         self.supported_tlds.iter().any(|tld| domain.ends_with(tld))
     }
 
+    /// Performs resolve operation.
     pub fn resolve(&mut self, domain: &str) -> Option<String> {
         if let Some(cached) = self.cache.get(domain) {
             return Some(cached.clone());
@@ -927,6 +1007,7 @@ pub struct DecentralizedIdentity {
 }
 
 impl DecentralizedIdentity {
+    /// Creates a new new.
     pub fn new() -> Self {
         Self {
             did: None,
@@ -934,16 +1015,19 @@ impl DecentralizedIdentity {
         }
     }
 
+    /// Creates a new did.
     pub fn create_did(&mut self) -> String {
         let did = format!("did:key:{}", uuid::Uuid::new_v4());
         self.did = Some(did.clone());
         did
     }
 
+    /// Adds a credential.
     pub fn add_credential(&mut self, credential: &str) {
         self.verifiable_credentials.push(credential.to_string());
     }
 
+    /// Gets the did.
     pub fn get_did(&self) -> Option<&String> {
         self.did.as_ref()
     }
@@ -966,6 +1050,7 @@ pub struct QuantumRng {
 }
 
 impl QuantumRng {
+    /// Creates a new new.
     pub fn new() -> Self {
         Self {
             entropy_source: "software_simulation".to_string(),
@@ -973,6 +1058,7 @@ impl QuantumRng {
         }
     }
 
+    /// Generates bytes.
     pub fn generate_bytes(&mut self, count: usize) -> Vec<u8> {
         use rand::Rng;
         let mut rng = rand::thread_rng();
@@ -980,6 +1066,7 @@ impl QuantumRng {
         (0..count).map(|_| rng.gen()).collect()
     }
 
+    /// Performs generated count operation.
     pub fn generated_count(&self) -> u64 {
         self.generated_count
     }
@@ -1043,6 +1130,7 @@ pub struct ExperimentalFeaturesManager {
 }
 
 impl ExperimentalFeaturesManager {
+    /// Creates a new new.
     pub fn new() -> Self {
         info!("Initializing Experimental Features Manager");
         Self {
@@ -1238,6 +1326,7 @@ impl Default for ExperimentalFeaturesManager {
 
 /// Information about an experimental feature
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a ExperimentalFeatureInfo.
 pub struct ExperimentalFeatureInfo {
     pub id: String,
     pub name: String,

@@ -1,3 +1,12 @@
+//! Authentication Module
+//!
+//! Provides user authentication and authorization functionality including:
+//! - User registration and login
+//! - JWT token generation and validation
+//! - Refresh token management
+//! - Role-based access control
+//! - Enterprise user management
+
 use anyhow::{anyhow, Result};
 use argon2::{
     password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
@@ -12,6 +21,7 @@ use tauri::async_runtime::RwLock;
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Enumeration of UserRole variants.
 pub enum UserRole {
     User,
     Admin,
@@ -19,6 +29,7 @@ pub enum UserRole {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a User.
 pub struct User {
     pub id: String,
     pub username: String,
@@ -30,6 +41,7 @@ pub struct User {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+/// Represents a Claims.
 pub struct Claims {
     pub sub: String, // User ID
     pub username: String,
@@ -41,6 +53,7 @@ pub struct Claims {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+/// Represents a RefreshToken.
 pub struct RefreshToken {
     pub id: String,
     pub user_id: String,
@@ -49,6 +62,7 @@ pub struct RefreshToken {
     pub created_at: chrono::DateTime<Utc>,
 }
 
+/// Represents a AuthManager.
 pub struct AuthManager {
     jwt_secret: String,
     users: Arc<RwLock<HashMap<String, User>>>, // In-memory for demo, use DB in production
@@ -59,6 +73,10 @@ pub struct AuthManager {
 }
 
 impl AuthManager {
+    /// Create a new AuthManager with the specified JWT secret
+    ///
+    /// # Arguments
+    /// * `jwt_secret` - The secret key used for JWT token signing
     pub fn new(jwt_secret: String) -> Self {
         Self {
             jwt_secret,
@@ -336,7 +354,15 @@ impl AuthManager {
 }
 
 // Tauri command handlers
+/// Tauri command to register a new user
+///
+/// # Arguments
+/// * `auth` - The AuthManager state
+/// * `username` - The username for the new user
+/// * `email` - The email address for the new user
+/// * `password` - The password for the new user
 #[tauri::command]
+/// Registers user.
 pub async fn register_user(
     auth: tauri::State<'_, Arc<AuthManager>>,
     username: String,
@@ -348,7 +374,17 @@ pub async fn register_user(
         .map_err(|e| e.to_string())
 }
 
+/// Tauri command to authenticate a user
+///
+/// # Arguments
+/// * `auth` - The AuthManager state
+/// * `username` - The username to authenticate
+/// * `password` - The password to verify
+///
+/// # Returns
+/// A tuple containing (access_token, refresh_token)
 #[tauri::command]
+/// Performs login user operation.
 pub async fn login_user(
     auth: tauri::State<'_, Arc<AuthManager>>,
     username: String,
@@ -359,7 +395,16 @@ pub async fn login_user(
         .map_err(|e| e.to_string())
 }
 
+/// Tauri command to refresh an access token
+///
+/// # Arguments
+/// * `auth` - The AuthManager state
+/// * `refresh_token` - The refresh token to use
+///
+/// # Returns
+/// A new access token
 #[tauri::command]
+/// Refreshes token.
 pub async fn refresh_token(
     auth: tauri::State<'_, Arc<AuthManager>>,
     refresh_token: String,
@@ -369,7 +414,16 @@ pub async fn refresh_token(
         .map_err(|e| e.to_string())
 }
 
+/// Tauri command to validate a JWT token
+///
+/// # Arguments
+/// * `auth` - The AuthManager state
+/// * `token` - The JWT token to validate
+///
+/// # Returns
+/// The claims from the token if valid
 #[tauri::command]
+/// Validates the jwt token.
 pub async fn validate_jwt_token(
     auth: tauri::State<'_, Arc<AuthManager>>,
     token: String,
@@ -378,7 +432,13 @@ pub async fn validate_jwt_token(
         .map_err(|e| e.to_string())
 }
 
+/// Tauri command to logout a user by revoking their refresh token
+///
+/// # Arguments
+/// * `auth` - The AuthManager state
+/// * `refresh_token` - The refresh token to revoke
 #[tauri::command]
+/// Performs logout operation.
 pub async fn logout(
     auth: tauri::State<'_, Arc<AuthManager>>,
     refresh_token: String,
@@ -388,7 +448,16 @@ pub async fn logout(
         .map_err(|e| e.to_string())
 }
 
+/// Tauri command to get the current authenticated user
+///
+/// # Arguments
+/// * `auth` - The AuthManager state
+/// * `token` - The JWT token to identify the user
+///
+/// # Returns
+/// The user if found, None otherwise
 #[tauri::command]
+/// Gets the current user.
 pub async fn get_current_user(
     auth: tauri::State<'_, Arc<AuthManager>>,
     token: String,
@@ -397,7 +466,16 @@ pub async fn get_current_user(
     Ok(auth.get_user(&claims.sub).await)
 }
 
+/// Tauri command to create an enterprise user
+///
+/// # Arguments
+/// * `auth` - The AuthManager state
+/// * `username` - The username for the new user
+/// * `email` - The email address for the new user
+/// * `password` - The password for the new user
+/// * `enterprise_id` - The enterprise ID to associate with the user
 #[tauri::command]
+/// Creates a new enterprise user.
 pub async fn create_enterprise_user(
     auth: tauri::State<'_, Arc<AuthManager>>,
     username: String,
@@ -410,7 +488,13 @@ pub async fn create_enterprise_user(
         .map_err(|e| e.to_string())
 }
 
+/// Tauri command to promote a user to admin role
+///
+/// # Arguments
+/// * `auth` - The AuthManager state
+/// * `user_id` - The ID of the user to promote
 #[tauri::command]
+/// Performs promote user to admin operation.
 pub async fn promote_user_to_admin(
     auth: tauri::State<'_, Arc<AuthManager>>,
     user_id: String,

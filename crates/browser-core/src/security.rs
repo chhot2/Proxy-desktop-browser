@@ -246,6 +246,7 @@ impl Default for SecurityManager<'_> {
 
 /// Validation structs for user input
 #[derive(Debug, Validate)]
+/// Represents a BookmarkInput.
 pub struct BookmarkInput {
     #[validate(length(min = 1, max = 255, message = "Title must be 1-255 characters"))]
     pub title: String,
@@ -258,6 +259,7 @@ pub struct BookmarkInput {
 }
 
 #[derive(Debug, Validate)]
+/// Represents a ProxyInput.
 pub struct ProxyInput {
     #[validate(length(min = 1, max = 255, message = "Host must be 1-255 characters"))]
     pub host: String,

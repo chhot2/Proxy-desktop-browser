@@ -27,6 +27,7 @@ pub struct MemoryProfiler {
 
 /// Memory snapshot at a point in time
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a MemorySnapshot.
 pub struct MemorySnapshot {
     pub timestamp_ms: u128,
     pub heap_used_mb: u64,
@@ -40,6 +41,7 @@ pub struct MemorySnapshot {
 
 /// Allocation tracking info
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a AllocationInfo.
 pub struct AllocationInfo {
     pub component: String,
     pub allocated_mb: f64,
@@ -50,6 +52,7 @@ pub struct AllocationInfo {
 
 /// Memory thresholds for alerts
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a MemoryThresholds.
 pub struct MemoryThresholds {
     pub warning_mb: u64,
     pub critical_mb: u64,
@@ -70,6 +73,7 @@ impl Default for MemoryThresholds {
 
 /// Memory alert types
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Enumeration of MemoryAlertLevel variants.
 pub enum MemoryAlertLevel {
     Info,
     Warning,
@@ -79,6 +83,7 @@ pub enum MemoryAlertLevel {
 
 /// Memory alert record
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a MemoryAlert.
 pub struct MemoryAlert {
     pub level: MemoryAlertLevel,
     pub message: String,
@@ -89,6 +94,7 @@ pub struct MemoryAlert {
 
 /// Memory statistics summary
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a MemoryStats.
 pub struct MemoryStats {
     pub current_mb: u64,
     pub peak_mb: u64,
@@ -103,6 +109,7 @@ pub struct MemoryStats {
 
 /// Garbage collection recommendation
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Enumeration of GcRecommendation variants.
 pub enum GcRecommendation {
     None,
     Minor,
@@ -345,6 +352,7 @@ impl MemoryProfiler {
 
 /// Memory leak detection report
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a LeakReport.
 pub struct LeakReport {
     pub component: String,
     pub suspected_leak_mb: f64,

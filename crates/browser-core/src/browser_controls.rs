@@ -6,6 +6,7 @@ use tokio::sync::RwLock;
 use crate::chromium_engine::BrowserEngineType;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a BrowserState.
 pub struct BrowserState {
     pub tab_id: String,
     pub current_url: String,
@@ -18,6 +19,7 @@ pub struct BrowserState {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a HistoryItem.
 pub struct HistoryItem {
     pub url: String,
     pub title: String,
@@ -40,6 +42,7 @@ impl Default for BrowserState {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a BrowserSettings.
 pub struct BrowserSettings {
     pub user_agent: String,
     pub language: String,
@@ -59,6 +62,7 @@ pub struct BrowserSettings {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+/// Enumeration of WebRtcPolicy variants.
 pub enum WebRtcPolicy {
     Default,
     DisableNonProxiedUdp,
@@ -90,12 +94,14 @@ impl Default for BrowserSettings {
     }
 }
 
+/// Represents a BrowserController.
 pub struct BrowserController {
     states: Arc<RwLock<HashMap<String, BrowserState>>>,
     settings: Arc<RwLock<BrowserSettings>>,
 }
 
 impl BrowserController {
+    /// Creates a new new.
     pub fn new() -> Self {
         Self {
             states: Arc::new(RwLock::new(HashMap::new())),
@@ -103,6 +109,7 @@ impl BrowserController {
         }
     }
 
+    /// Creates a new browser state.
     pub async fn create_browser_state(&self, tab_id: &str) -> BrowserState {
         let state = BrowserState {
             tab_id: tab_id.to_string(),
@@ -112,10 +119,12 @@ impl BrowserController {
         state
     }
 
+    /// Gets the state.
     pub async fn get_state(&self, tab_id: &str) -> Option<BrowserState> {
         self.states.read().await.get(tab_id).cloned()
     }
 
+    /// Performs navigate operation.
     pub async fn navigate(&self, tab_id: &str, url: &str) -> Result<BrowserState> {
         let mut states = self.states.write().await;
         let state = states.entry(tab_id.to_string()).or_insert_with(|| BrowserState {
@@ -144,6 +153,7 @@ impl BrowserController {
         Ok(state.clone())
     }
 
+    /// Performs go back operation.
     pub async fn go_back(&self, tab_id: &str) -> Result<Option<String>> {
         let mut states = self.states.write().await;
         if let Some(state) = states.get_mut(tab_id) {
@@ -159,6 +169,7 @@ impl BrowserController {
         Ok(None)
     }
 
+    /// Performs go forward operation.
     pub async fn go_forward(&self, tab_id: &str) -> Result<Option<String>> {
         let mut states = self.states.write().await;
         if let Some(state) = states.get_mut(tab_id) {
@@ -174,6 +185,7 @@ impl BrowserController {
         Ok(None)
     }
 
+    /// Performs reload operation.
     pub async fn reload(&self, tab_id: &str) -> Result<Option<String>> {
         let states = self.states.read().await;
         if let Some(state) = states.get(tab_id) {
@@ -182,6 +194,7 @@ impl BrowserController {
         Ok(None)
     }
 
+    /// Stops the loading.
     pub async fn stop_loading(&self, tab_id: &str) {
         let mut states = self.states.write().await;
         if let Some(state) = states.get_mut(tab_id) {
@@ -189,6 +202,7 @@ impl BrowserController {
         }
     }
 
+    /// Updates the title.
     pub async fn update_title(&self, tab_id: &str, title: &str) {
         let mut states = self.states.write().await;
         if let Some(state) = states.get_mut(tab_id) {
@@ -200,6 +214,7 @@ impl BrowserController {
         }
     }
 
+    /// Sets the loading.
     pub async fn set_loading(&self, tab_id: &str, loading: bool) {
         let mut states = self.states.write().await;
         if let Some(state) = states.get_mut(tab_id) {
@@ -207,18 +222,22 @@ impl BrowserController {
         }
     }
 
+    /// Closes tab.
     pub async fn close_tab(&self, tab_id: &str) {
         self.states.write().await.remove(tab_id);
     }
 
+    /// Gets the settings.
     pub async fn get_settings(&self) -> BrowserSettings {
         self.settings.read().await.clone()
     }
 
+    /// Sets the settings.
     pub async fn set_settings(&self, settings: BrowserSettings) {
         *self.settings.write().await = settings;
     }
 
+    /// Gets the all states.
     pub async fn get_all_states(&self) -> Vec<BrowserState> {
         self.states.read().await.values().cloned().collect()
     }
@@ -238,6 +257,7 @@ use std::path::PathBuf;
 
 /// Download state enumeration
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+/// Enumeration of DownloadState variants.
 pub enum DownloadState {
     Pending,
     InProgress,
@@ -249,6 +269,7 @@ pub enum DownloadState {
 
 /// Represents a download item
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a DownloadItem.
 pub struct DownloadItem {
     pub id: String,
     pub url: String,
@@ -287,6 +308,7 @@ pub struct DownloadManager {
 }
 
 impl DownloadManager {
+    /// Creates a new new.
     pub fn new(download_dir: PathBuf) -> Self {
         Self {
             downloads: Arc::new(RwLock::new(HashMap::new())),
@@ -295,6 +317,7 @@ impl DownloadManager {
         }
     }
 
+    /// Configures with max concurrent.
     pub fn with_max_concurrent(mut self, max: usize) -> Self {
         self.max_concurrent_downloads = max;
         self
@@ -454,6 +477,7 @@ impl Default for DownloadManager {
 
 /// Context menu item types
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+/// Enumeration of ContextMenuItemType variants.
 pub enum ContextMenuItemType {
     Normal,
     Separator,
@@ -464,6 +488,7 @@ pub enum ContextMenuItemType {
 
 /// A context menu item
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a ContextMenuItem.
 pub struct ContextMenuItem {
     pub id: String,
     pub label: String,
@@ -476,6 +501,7 @@ pub struct ContextMenuItem {
 }
 
 impl ContextMenuItem {
+    /// Creates a new new.
     pub fn new(id: &str, label: &str) -> Self {
         Self {
             id: id.to_string(),
@@ -489,6 +515,7 @@ impl ContextMenuItem {
         }
     }
 
+    /// Performs separator operation.
     pub fn separator() -> Self {
         Self {
             id: String::new(),
@@ -502,27 +529,32 @@ impl ContextMenuItem {
         }
     }
 
+    /// Configures with icon.
     pub fn with_icon(mut self, icon: &str) -> Self {
         self.icon = Some(icon.to_string());
         self
     }
 
+    /// Configures with shortcut.
     pub fn with_shortcut(mut self, shortcut: &str) -> Self {
         self.shortcut = Some(shortcut.to_string());
         self
     }
 
+    /// Performs disabled operation.
     pub fn disabled(mut self) -> Self {
         self.enabled = false;
         self
     }
 
+    /// Performs checkbox operation.
     pub fn checkbox(mut self, checked: bool) -> Self {
         self.item_type = ContextMenuItemType::Checkbox;
         self.checked = checked;
         self
     }
 
+    /// Configures with submenu.
     pub fn with_submenu(mut self, items: Vec<ContextMenuItem>) -> Self {
         self.item_type = ContextMenuItemType::Submenu;
         self.submenu = Some(items);
@@ -532,6 +564,7 @@ impl ContextMenuItem {
 
 /// Context types for different areas of the browser
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+/// Enumeration of ContextType variants.
 pub enum ContextType {
     Page,
     Link,
@@ -545,6 +578,7 @@ pub enum ContextType {
 
 /// Context information for menu generation
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents a ContextInfo.
 pub struct ContextInfo {
     pub context_type: ContextType,
     pub page_url: String,
@@ -563,6 +597,7 @@ pub struct ContextMenuManager {
 }
 
 impl ContextMenuManager {
+    /// Creates a new new.
     pub fn new() -> Self {
         Self {
             custom_items: Arc::new(RwLock::new(HashMap::new())),
