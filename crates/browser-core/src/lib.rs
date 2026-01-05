@@ -9,6 +9,9 @@ pub use prelude::{
     validators, string_utils
 };
 
+pub use browser_profile::{BrowserProfile, BrowserProfileManager, ProfileSettings};
+pub use screenshot::{ScreenshotManager, ScreenshotOptions, ScreenshotFormat, ScreenshotResult};
+
 pub mod tab_manager;
 pub mod config_manager;
 
@@ -46,6 +49,8 @@ pub mod experimental;
 // V1000 Additional Feature Modules
 pub mod automation;
 pub mod content_enhancement;
+pub mod browser_profile;
+pub mod screenshot;
 
 // Database removed - using in-memory storage
 
