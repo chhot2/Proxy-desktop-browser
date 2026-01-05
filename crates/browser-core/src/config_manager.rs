@@ -484,30 +484,36 @@ impl ConfigManager {
     }
 
     /// Get the privacy configuration section
+    /// Get the privacy configuration section
     pub async fn get_privacy(&self) -> PrivacyConfig {
         self.config.read().await.privacy.clone()
     }
 
+    /// Get the performance configuration section
     /// Get the performance configuration section
     pub async fn get_performance(&self) -> PerformanceConfig {
         self.config.read().await.performance.clone()
     }
 
     /// Get the network configuration section
+    /// Get the network configuration section
     pub async fn get_network(&self) -> NetworkConfig {
         self.config.read().await.network.clone()
     }
 
+    /// Get the storage configuration section
     /// Get the storage configuration section
     pub async fn get_storage(&self) -> StorageConfig {
         self.config.read().await.storage.clone()
     }
 
     /// Get the logging configuration section
+    /// Get the logging configuration section
     pub async fn get_logging(&self) -> LoggingConfig {
         self.config.read().await.logging.clone()
     }
 
+    /// Get the feature flags configuration section
     /// Get the feature flags configuration section
     pub async fn get_features(&self) -> FeatureFlags {
         self.config.read().await.features.clone()
