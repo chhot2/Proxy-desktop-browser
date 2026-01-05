@@ -757,7 +757,7 @@ mod tests {
 
     async fn create_test_storage() -> (StorageEngine, TempDir) {
         let temp_dir = TempDir::new().expect("Operation should succeed in test");
-        let storage = StorageEngine::new(temp_dir.path()).unwrap();
+        let storage = StorageEngine::new(temp_dir.path()).expect("Failed to create storage engine");
         (storage, temp_dir)
     }
 
@@ -777,9 +777,9 @@ mod tests {
             same_site: "Lax".to_string(),
         }).await.expect("Async operation should succeed");
 
-        storage.add_history("https://example.com", Some("Example")).await.unwrap();
-        storage.add_bookmark("https://example.com", "Example Site", None).await.unwrap();
-        storage.set_local_storage("https://example.com", "key1", "value1").await.unwrap();
+        storage.add_history("https://example.com", Some("Example")).await.expect("Add history should succeed");
+        storage.add_bookmark("https://example.com", "Example Site", None).await.expect("Add bookmark should succeed");
+        storage.set_local_storage("https://example.com", "key1", "value1").await.expect("Set local storage should succeed");
 
         // Export
         let export = storage.export_all().await.expect("Export operation should succeed");
@@ -802,7 +802,7 @@ mod tests {
     async fn test_export_import_json() {
         let (storage, _temp) = create_test_storage().await;
 
-        storage.add_bookmark("https://test.com", "Test", None).await.unwrap();
+        storage.add_bookmark("https://test.com", "Test", None).await.expect("Add bookmark should succeed");
         
         let json = storage.export_to_json().await.expect("Export operation should succeed");
         assert!(json.contains("test.com"));
@@ -827,7 +827,7 @@ mod tests {
             secure: false,
             same_site: "None".to_string(),
         }).await.expect("Async operation should succeed");
-        storage.add_bookmark("https://test.com", "Test", None).await.unwrap();
+        storage.add_bookmark("https://test.com", "Test", None).await.expect("Add bookmark should succeed");
 
         let export = storage.export_all().await.expect("Export operation should succeed");
         storage.clear_all().await.expect("Clear operation should succeed");
@@ -851,10 +851,10 @@ mod tests {
     async fn test_merge_import() {
         let (storage, _temp) = create_test_storage().await;
 
-        storage.add_bookmark("https://first.com", "First", None).await.unwrap();
+        storage.add_bookmark("https://first.com", "First", None).await.expect("Add bookmark should succeed");
         let export = storage.export_all().await.expect("Export operation should succeed");
 
-        storage.add_bookmark("https://second.com", "Second", None).await.unwrap();
+        storage.add_bookmark("https://second.com", "Second", None).await.expect("Add bookmark should succeed");
 
         // Merge import
         let options = ImportOptions::all();
