@@ -8,6 +8,17 @@
 4. Bun - Install from https://bun.sh
 5. Visual Studio Build Tools - Required for Windows builds
 
+## Pre-built Windows Executables
+
+Pre-built Windows executables are available in the [GitHub Releases](https://github.com/Cicdsd/Proxy-desktop-browser/releases):
+
+- **virtual-ip-browser.exe** - Main Windows desktop application
+- **api-server.exe** - API server component
+
+### System Requirements
+- Windows 10 or later
+- WebView2 Runtime (usually pre-installed on Windows 10/11)
+
 ## Building on Windows
 
 1. Clone the repository
@@ -17,13 +28,6 @@
 
 The built executable will be in ui-tauri/src-tauri/target/release/bundle/
 
-## GitHub Actions
+## Cross-compiling from Linux
 
-This repository includes a GitHub Actions workflow that automatically builds Windows executables on push.
-
-## Current Build Status
-
-- Linux build: Working
-- Code compilation: Clean (zero warnings)  
-- Tests: 93 tests passing
-- Windows build: Requires Windows environment or GitHub Actions
+To cross-compile for Windows from Linux:
