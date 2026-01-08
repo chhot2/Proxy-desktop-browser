@@ -26,7 +26,7 @@ pub struct BackupData {
     pub local_storage: Option<Vec<LocalStorageEntry>>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 /// Represents a BrowserConfig.
 pub struct BrowserConfig {
     pub user_agent: Option<String>,
