@@ -507,6 +507,7 @@ impl Default for ActionRecorder {
 // =============================================================================
 
 /// Workflow condition evaluator
+#[allow(clippy::type_complexity)]
 pub struct ConditionEvaluator {
     custom_evaluators: HashMap<String, Box<dyn Fn(&str) -> bool + Send + Sync>>,
 }

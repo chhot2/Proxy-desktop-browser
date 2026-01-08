@@ -145,7 +145,7 @@ impl FreeIpProviderManager {
     /// Fetches from provider.
     pub async fn fetch_from_provider(&mut self, provider: &FreeIpProvider) -> Result<Vec<FreeProxy>> {
         // Check rate limiting
-        if let Some(last_fetch) = self.rate_limiters.get(&provider.name().to_string()) {
+        if let Some(last_fetch) = self.rate_limiters.get(provider.name()) {
             let elapsed = last_fetch.elapsed();
             if elapsed < provider.rate_limit() {
                 tokio::time::sleep(provider.rate_limit() - elapsed).await;

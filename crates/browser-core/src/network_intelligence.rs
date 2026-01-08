@@ -458,9 +458,8 @@ impl QosManager {
         
         let lower = url.to_lowercase();
         
-        if lower.contains("analytics") || lower.contains("tracking") || lower.contains("beacon") {
-            QosPriority::Low
-        } else if lower.contains("prefetch") || lower.contains("preload") {
+        if lower.contains("analytics") || lower.contains("tracking") || lower.contains("beacon") 
+            || lower.contains("prefetch") || lower.contains("preload") {
             QosPriority::Low
         } else if lower.ends_with(".js") || lower.ends_with(".css") {
             QosPriority::High

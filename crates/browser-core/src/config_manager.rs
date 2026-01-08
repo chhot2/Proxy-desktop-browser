@@ -347,6 +347,7 @@ impl Default for FeatureFlags {
 }
 
 /// Configuration manager for loading, saving, and managing configuration
+#[allow(clippy::type_complexity)]
 pub struct ConfigManager {
     config: Arc<RwLock<AppConfig>>,
     config_path: Option<PathBuf>,

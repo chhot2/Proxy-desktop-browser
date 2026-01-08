@@ -292,6 +292,7 @@ impl PublicIpDetector {
         })
     }
 
+    #[allow(clippy::type_complexity)]
     /// Performs detect ip operation.
     pub async fn detect_ip(&self) -> Result<PublicIpInfo> {
         // Try multiple IP detection services

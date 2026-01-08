@@ -119,7 +119,7 @@ impl WebviewManager {
         let tab = tabs.get(tab_id).ok_or_else(|| anyhow!("Tab not found"))?;
         
         if let Some(window) = self.app_handle.get_webview_window(&tab.window_label) {
-            window.eval(&format!("window.location.href = '{}';", url))?;
+            window.eval(format!("window.location.href = '{}';", url))?;
             
             // Update tab info
             drop(tabs);

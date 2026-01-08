@@ -320,7 +320,7 @@ impl CoreWebVitals {
 
     /// Check if vitals need improvement (yellow)
     pub fn needs_improvement(&self) -> bool {
-        !self.is_good() && !(self.lcp_ms > 4000 || self.fid_ms > 300 || self.cls > 0.25)
+        !(self.is_good() || self.lcp_ms > 4000 || self.fid_ms > 300 || self.cls > 0.25)
     }
 
     /// Get overall score (0-100)

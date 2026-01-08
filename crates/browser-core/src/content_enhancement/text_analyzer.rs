@@ -66,7 +66,7 @@ impl TextAnalyzer {
         // Flesch Reading Ease approximation
         let syllables_per_word = avg_word_length / 3.0; // Rough approximation
         let readability_score = 206.835 - 1.015 * avg_sentence_length - 84.6 * syllables_per_word;
-        let readability_score = readability_score.max(0.0).min(100.0);
+        let readability_score = readability_score.clamp(0.0, 100.0);
 
         TextStatistics {
             char_count: chars.len(),

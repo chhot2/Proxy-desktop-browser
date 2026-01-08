@@ -427,9 +427,8 @@ impl SmartProxySelector {
         score += response_score * self.response_time_weight;
         
         // Geographic score
-        let geo_score = if self.preferred_countries.is_empty() {
-            1.0
-        } else if self.preferred_countries.contains(&proxy.country) 
+        let geo_score = if self.preferred_countries.is_empty() 
+            || self.preferred_countries.contains(&proxy.country) 
             || self.preferred_countries.contains(&proxy.country_code) {
             1.0
         } else {

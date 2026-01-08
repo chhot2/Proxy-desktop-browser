@@ -139,7 +139,7 @@ impl MediaPlayer {
 
     /// Play next in playlist
     /// Move to the next item in the playlist
-    pub fn next(&mut self) -> Option<&MediaInfo> {
+    pub fn play_next(&mut self) -> Option<&MediaInfo> {
         if !self.playlist.is_empty() {
             if let Some(current) = self.current_media.take() {
                 self.history.push(current);
