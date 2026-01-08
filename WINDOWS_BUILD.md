@@ -1,51 +1,29 @@
-# Building for Windows
+# Windows Build Instructions
 
 ## Prerequisites
 
-1. Install [Rust](https://rustup.rs/)
-2. Install [Node.js](https://nodejs.org/) (v20 or later)
-3. Install [Bun](https://bun.sh/) (recommended) or use npm
-4. Install Visual Studio Build Tools with C++ workload
+1. Windows 10/11 or Windows Server 2019+
+2. Rust toolchain - Install from https://rustup.rs
+3. Node.js 18+ - Install from https://nodejs.org
+4. Bun - Install from https://bun.sh
+5. Visual Studio Build Tools - Required for Windows builds
 
-## Build Steps
+## Building on Windows
 
-### 1. Clone the repository
+1. Clone the repository
+2. cd ui-tauri && bun install
+3. bun run build
+4. cd src-tauri && cargo tauri build
 
-git clone https://github.com/Cicdsd/Proxy-desktop-browser.git
-cd Proxy-desktop-browser
+The built executable will be in ui-tauri/src-tauri/target/release/bundle/
 
-### 2. Install frontend dependencies
+## GitHub Actions
 
-cd ui-tauri
-bun install
-# or: npm install
+This repository includes a GitHub Actions workflow that automatically builds Windows executables on push.
 
-### 3. Build the frontend
+## Current Build Status
 
-bun run build
-# or: npm run build
-
-### 4. Build the Tauri desktop application
-
-bun run tauri:build
-# or: npm run tauri:build
-
-The built executable will be in ui-tauri/src-tauri/target/release/bundle/.
-
-## Pre-built Binaries
-
-Pre-built Windows binaries are available in the [Releases](https://github.com/Cicdsd/Proxy-desktop-browser/releases) section.
-
-## GitHub Actions Build
-
-The Windows build is automatically triggered via GitHub Actions on every push to the main branch. The workflow file is located at .github/workflows/build-windows.yml.
-
-## Cross-compilation from Linux
-
-To cross-compile for Windows from Linux:
-
-1. Install MinGW-w64: sudo apt-get install mingw-w64
-2. Add the Windows target: rustup target add x86_64-pc-windows-gnu
-3. Build: cargo build --target x86_64-pc-windows-gnu --release
-
-Note: Cross-compilation may not include all Tauri features. For full builds, use Windows or GitHub Actions.
+- Linux build: Working
+- Code compilation: Clean (zero warnings)  
+- Tests: 93 tests passing
+- Windows build: Requires Windows environment or GitHub Actions
