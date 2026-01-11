@@ -47,14 +47,14 @@
   let historySearchQuery = $state('');
   
   // Derived state with Svelte 5 runes
-  let activeTab = $derived(() => tabs.find(t => t.tab_id === activeTabId) || null);
-  let filteredTabs = $derived(() => tabSearchQuery 
+  let activeTab: BrowserTab | null = $derived(tabs.find(t => t.tab_id === activeTabId) || null);
+  let filteredTabs: BrowserTab[] = $derived(tabSearchQuery 
     ? tabs.filter(t => 
         t.title?.toLowerCase().includes(tabSearchQuery.toLowerCase()) ||
         t.url?.toLowerCase().includes(tabSearchQuery.toLowerCase())
       )
     : tabs);
-  let filteredHistory = $derived(() => historySearchQuery
+  let filteredHistory: HistoryEntry[] = $derived(historySearchQuery
     ? history.filter(h =>
         h.title?.toLowerCase().includes(historySearchQuery.toLowerCase()) ||
         h.url?.toLowerCase().includes(historySearchQuery.toLowerCase())
@@ -63,8 +63,8 @@
   
   // Effect for updating URL when active tab changes
   $effect(() => {
-    if (activeTab()) {
-      urlInput = activeTab().url;
+    if (activeTab) {
+      urlInput = activeTab.url;
     }
   });
   
@@ -191,7 +191,8 @@
   }
   
   async function navigate() {
-    if (!activeTab || !urlInput.trim()) return;
+    const currentActiveTab = activeTab;
+    if (!currentActiveTab || !urlInput.trim()) return;
     
     let url = urlInput.trim();
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
@@ -204,8 +205,8 @@
     
     isLoading = true;
     try {
-      await invoke('navigate_webview_tab', { tabId: activeTab.tab_id, url });
-      updateTabState(activeTab.tab_id, { url, is_loading: true });
+      await invoke('navigate_webview_tab', { tabId: currentActiveTab.tab_id, url });
+      updateTabState(currentActiveTab.tab_id, { url, is_loading: true });
       urlInput = url;
     } catch (e) {
       console.error('Failed to navigate:', e);
@@ -215,27 +216,30 @@
   }
   
   async function goBack() {
-    if (!activeTab) return;
+    const currentActiveTab = activeTab;
+    if (!currentActiveTab) return;
     try {
-      await invoke('go_back', { tabId: activeTab.tab_id });
+      await invoke('go_back', { tabId: currentActiveTab.tab_id });
     } catch (e) {
       console.error('Go back failed:', e);
     }
   }
   
   async function goForward() {
-    if (!activeTab) return;
+    const currentActiveTab = activeTab;
+    if (!currentActiveTab) return;
     try {
-      await invoke('go_forward', { tabId: activeTab.tab_id });
+      await invoke('go_forward', { tabId: currentActiveTab.tab_id });
     } catch (e) {
       console.error('Go forward failed:', e);
     }
   }
   
   async function refresh() {
-    if (!activeTab) return;
+    const currentActiveTab = activeTab;
+    if (!currentActiveTab) return;
     try {
-      await invoke('reload_page', { tabId: activeTab.tab_id });
+      await invoke('reload_page', { tabId: currentActiveTab.tab_id });
     } catch (e) {
       console.error('Refresh failed:', e);
     }
@@ -341,11 +345,12 @@
   }
   
   async function addBookmark() {
-    if (!activeTab) return;
+    const currentActiveTab = activeTab;
+    if (!currentActiveTab) return;
     try {
       await invoke('add_bookmark', { 
-        url: activeTab.url, 
-        title: activeTab.title || activeTab.url,
+        url: currentActiveTab.url, 
+        title: currentActiveTab.title || currentActiveTab.url,
         folder: null
       });
       await loadBookmarks();
@@ -364,7 +369,8 @@
   }
   
   async function openBookmark(url: string) {
-    if (activeTab) {
+    const currentActiveTab = activeTab;
+    if (currentActiveTab) {
       urlInput = url;
       await navigate();
     } else {
@@ -394,7 +400,8 @@
   }
   
   async function openHistoryEntry(url: string) {
-    if (activeTab) {
+    const currentActiveTab = activeTab;
+    if (currentActiveTab) {
       urlInput = url;
       await navigate();
     }
@@ -441,7 +448,8 @@
     const tab = tabs.find(t => t.tab_id === tabId);
     if (tab) {
       await createNewTab(!!currentProxy);
-      if (activeTab) {
+      const currentActiveTab = activeTab;
+      if (currentActiveTab) {
         urlInput = tab.url;
         await navigate();
       }
@@ -489,9 +497,12 @@
       createNewTab();
     }
     // Ctrl+W: Close tab
-    if (e.ctrlKey && e.key === 'w' && activeTab) {
+    if (e.ctrlKey && e.key === 'w') {
       e.preventDefault();
-      closeTab(activeTab.tab_id);
+      const currentActiveTab = activeTab;
+      if (currentActiveTab) {
+        closeTab(currentActiveTab.tab_id);
+      }
     }
     // Ctrl+Shift+T: Reopen closed tab
     if (e.ctrlKey && e.shiftKey && e.key === 'T') {
@@ -580,7 +591,7 @@
       <button 
         class="nav-btn" 
         onclick={goBack}
-        disabled={!activeTab()?.can_go_back}
+        disabled={!activeTab?.can_go_back}
         title="Go Back (Alt+Left)"
       >
         <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
@@ -590,7 +601,7 @@
       <button 
         class="nav-btn" 
         onclick={goForward}
-        disabled={!activeTab()?.can_go_forward}
+        disabled={!activeTab?.can_go_forward}
         title="Go Forward (Alt+Right)"
       >
         <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
@@ -600,7 +611,7 @@
       <button 
         class="nav-btn" 
         onclick={refresh}
-        disabled={!activeTab()}
+        disabled={!activeTab}
         title="Refresh (Ctrl+R)"
       >
         <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" class:spinning={isLoading}>
